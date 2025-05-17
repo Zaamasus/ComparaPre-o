@@ -78,19 +78,19 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({ onSaveComparison }) => 
   return (
     <div className="mb-10">
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h2 className="text-2xl font-bold text-gray-800">Comparar Produtos</h2>
-          <div className="flex space-x-2">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
             <button
               onClick={adicionarProduto}
-              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors flex items-center"
+              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors flex items-center justify-center"
             >
               <PlusCircle size={18} className="mr-1" />
               Adicionar Produto
             </button>
             <button
               onClick={salvarComparacao}
-              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md transition-colors flex items-center"
+              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md transition-colors flex items-center justify-center"
               disabled={produtos.filter(p => p.nome && p.preco > 0 && p.quantidade > 0).length < 2}
             >
               <Save size={18} className="mr-1" />
