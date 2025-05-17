@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import useLocalStorage from '../hooks/useLocalStorageTemp';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Tag } from 'lucide-react';
 
 // Interface para definir a estrutura de um item de compra
 interface ShoppingItem {
@@ -17,13 +17,18 @@ export const ShoppingCalculator: React.FC = () => {
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
   const [quantidade, setQuantidade] = useState('1');
+  // Estado para controlar o modo de entrada (com ou sem nome)
+  const [modoCompleto, setModoCompleto] = useState(true);
+  // Contador para nomes automáticos
+  const [contadorItems, setContadorItems] = useState(1);
 
   // Função para adicionar um novo item à lista
   const adicionarItem = () => {
-    if (nome && preco && quantidade) {
+    if ((!modoCompleto || nome) && preco && quantidade) {
+      const nomeItem = modoCompleto ? nome : `Item ${contadorItems}`;
       const novoItem: ShoppingItem = {
-        id: Date.now(), // Usa timestamp como ID único
-        nome,
+        id: Date.now(),
+        nome: nomeItem,
         preco: parseFloat(preco),
         quantidade: parseInt(quantidade),
       };
@@ -32,6 +37,10 @@ export const ShoppingCalculator: React.FC = () => {
       setNome('');
       setPreco('');
       setQuantidade('1');
+      // Incrementa o contador se estiver no modo rápido
+      if (!modoCompleto) {
+        setContadorItems(contadorItems + 1);
+      }
     }
   };
 
@@ -43,6 +52,7 @@ export const ShoppingCalculator: React.FC = () => {
   // Função para limpar toda a lista
   const limparLista = () => {
     setItems([]);
+    setContadorItems(1);
   };
 
   // Calcula o valor total da compra
@@ -52,26 +62,44 @@ export const ShoppingCalculator: React.FC = () => {
     <div className="p-4 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Calculadora de Compras</h2>
-        {items.length > 0 && (
-          <button
-            onClick={limparLista}
-            className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-          >
-            <Trash2 size={18} />
-            Limpar Lista
-          </button>
-        )}
+        <div className="flex items-center gap-4">
+          {/* Toggle para modo de entrada */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Modo Rápido</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={modoCompleto}
+                onChange={(e) => setModoCompleto(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+            <span className="text-sm text-gray-600">Modo Completo</span>
+          </div>
+          {items.length > 0 && (
+            <button
+              onClick={limparLista}
+              className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+            >
+              <Trash2 size={18} />
+              Limpar Lista
+            </button>
+          )}
+        </div>
       </div>
       
       {/* Formulário para adicionar novos itens */}
       <div className="flex flex-wrap gap-2 mb-4">
-        <input
-          type="text"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          placeholder="Nome do produto"
-          className="p-2 border rounded flex-1"
-        />
+        {modoCompleto && (
+          <input
+            type="text"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Nome do produto"
+            className="p-2 border rounded flex-1"
+          />
+        )}
         <input
           type="number"
           value={preco}
@@ -101,7 +129,10 @@ export const ShoppingCalculator: React.FC = () => {
       <div className="space-y-2">
         {items.map(item => (
           <div key={item.id} className="flex flex-wrap justify-between items-center bg-gray-50 p-2 rounded">
-            <span className="font-medium">{item.nome}</span>
+            <span className="font-medium flex items-center gap-2">
+              <Tag size={16} className="text-gray-500" />
+              {item.nome}
+            </span>
             <div className="flex items-center gap-4">
               <span>{item.quantidade}x</span>
               <span>R$ {item.preco.toFixed(2)}</span>
