@@ -23,31 +23,31 @@ function App() {
     <div className="min-h-screen flex flex-col bg-gray-100">
       <Header />
       
-      <main className="flex-grow">
+      <main className="flex-grow pt-[57px] md:pt-[65px]">
         {/* Seção Principal */}
-        <section className="bg-blue-700 text-white py-16">
+        <section className="bg-blue-700 text-white py-8 md:py-16">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center">
               <div className="md:w-1/2 mb-8 md:mb-0">
-                <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                <h1 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">
                   Compare preços e economize nas suas compras
                 </h1>
-                <p className="text-xl mb-8 text-blue-100">
+                <p className="text-lg md:text-xl mb-6 md:mb-8 text-blue-100">
                   Descubra qual produto oferece o melhor custo-benefício comparando 
                   preços por unidade de peso ou volume.
                 </p>
                 <a 
                   href="#comparar" 
-                  className="inline-block bg-white text-blue-700 font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-50 transition-colors"
+                  className="inline-block bg-white text-blue-700 font-semibold py-2.5 md:py-3 px-5 md:px-6 rounded-lg shadow-md hover:bg-blue-50 transition-colors text-sm md:text-base"
                 >
                   Começar a Comparar
                 </a>
               </div>
-              <div className="md:w-1/2 md:pl-10">
-                <div className="bg-blue-800 p-8 rounded-lg shadow-lg transform rotate-1">
-                  <div className="bg-white p-6 rounded-lg shadow-inner transform -rotate-2">
-                    <h3 className="text-blue-700 text-xl font-bold mb-3">Exemplo Rápido:</h3>
-                    <div className="space-y-4 text-gray-800">
+              <div className="md:w-1/2 md:pl-10 w-full">
+                <div className="bg-blue-800 p-4 md:p-8 rounded-lg shadow-lg transform rotate-1">
+                  <div className="bg-white p-4 md:p-6 rounded-lg shadow-inner transform -rotate-2">
+                    <h3 className="text-blue-700 text-lg md:text-xl font-bold mb-3">Exemplo Rápido:</h3>
+                    <div className="space-y-3 md:space-y-4 text-gray-800 text-sm md:text-base">
                       <div className="flex justify-between pb-2 border-b">
                         <span>Detergente 500ml:</span>
                         <span className="font-semibold">R$ 7,90</span>
@@ -64,7 +64,7 @@ function App() {
                         <span>Preço por ml:</span>
                         <span className="font-semibold">R$ 0,0143</span>
                       </div>
-                      <div className="bg-green-100 p-3 rounded-md text-green-800 font-medium">
+                      <div className="bg-green-100 p-2 md:p-3 rounded-md text-green-800 font-medium text-sm md:text-base">
                         Economia de 9,5% no detergente maior!
                       </div>
                     </div>
@@ -76,20 +76,22 @@ function App() {
         </section>
         
         {/* Seção de Comparação */}
-        <section id="comparar" className="py-16">
+        <section id="comparar" className="py-8 md:py-16 scroll-mt-[65px]">
           <div className="container mx-auto px-4">
             <ComparisonForm onSaveComparison={handleSaveComparison} />
           </div>
         </section>
         
         {/* Seção Como Funciona */}
-        <HowItWorks />
+        <section id="como-funciona" className="scroll-mt-[65px]">
+          <HowItWorks />
+        </section>
         
         {/* Seção de Anúncios dos Parceiros */}
         <PartnersAds />
         
         {/* Seção de Comparações Salvas */}
-        <section id="historico" className="py-16">
+        <section id="historico" className="py-8 md:py-16 scroll-mt-[65px]">
           <div className="container mx-auto px-4">
             <SavedComparisons 
               comparacoes={comparacoes}
