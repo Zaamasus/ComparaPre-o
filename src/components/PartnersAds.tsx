@@ -29,7 +29,7 @@ const PartnersAds: React.FC = () => {
             Interessado em anunciar? Entre em contato conosco:
           </p>
           <a 
-            href="mailto:samuel.gomes@email.com" 
+            href="samuelginformatica@gmail.com" 
             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
           >
             <Mail className="h-5 w-5 mr-2" />

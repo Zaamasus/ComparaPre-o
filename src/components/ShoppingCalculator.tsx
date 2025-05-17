@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import useLocalStorage from '../hooks/useLocalStorageTemp';
+import { Trash2 } from 'lucide-react';
 
 // Interface para definir a estrutura de um item de compra
 interface ShoppingItem {
@@ -9,8 +11,8 @@ interface ShoppingItem {
 }
 
 export const ShoppingCalculator: React.FC = () => {
-  // Estado para armazenar a lista de itens
-  const [items, setItems] = useState<ShoppingItem[]>([]);
+  // Estado para armazenar a lista de itens usando localStorage
+  const [items, setItems] = useLocalStorage<ShoppingItem[]>('shopping-items', []);
   // Estados para controlar os campos do formulário
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
@@ -38,12 +40,28 @@ export const ShoppingCalculator: React.FC = () => {
     setItems(items.filter(item => item.id !== id));
   };
 
+  // Função para limpar toda a lista
+  const limparLista = () => {
+    setItems([]);
+  };
+
   // Calcula o valor total da compra
   const total = items.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Calculadora de Compras</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Calculadora de Compras</h2>
+        {items.length > 0 && (
+          <button
+            onClick={limparLista}
+            className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+          >
+            <Trash2 size={18} />
+            Limpar Lista
+          </button>
+        )}
+      </div>
       
       {/* Formulário para adicionar novos itens */}
       <div className="flex flex-wrap gap-2 mb-4">
