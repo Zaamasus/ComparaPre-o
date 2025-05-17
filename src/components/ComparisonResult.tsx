@@ -5,7 +5,7 @@ import {
   formatarPreco, 
   calcularDiferencaPorcentagem 
 } from '../utils/calculations';
-import { Check, AlertTriangle } from 'lucide-react';
+import { Check, AlertTriangle, Share2 } from 'lucide-react';
 
 interface ComparisonResultProps {
   produtos: Produto[];
@@ -129,9 +129,79 @@ const ComparisonResult: React.FC<ComparisonResultProps> = ({ produtos }) => {
     );
   };
 
+  // Função para compartilhar no WhatsApp
+  const compartilharNoWhatsApp = () => {
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
+    let mensagem = `🔍 Comparação de Preços (${dataAtual})\n\n`;
+
+    if (produtosVolume.length > 0) {
+      mensagem += `📊 Produtos Líquidos:\n`;
+      produtosVolumeOrdenados.forEach((produto, index) => {
+        const precoUnidade = calcularPrecoUnidade(produto);
+        const isMelhor = produto.id === melhorVolume.id;
+        mensagem += `${isMelhor ? '✨' : '•'} ${produto.nome}\n`;
+        mensagem += `   💰 Preço: ${formatarPreco(produto.preco)}\n`;
+        mensagem += `   📦 Quantidade: ${produto.quantidade}${produto.unidade}\n`;
+        mensagem += `   💵 Preço por ml: ${precoUnidade.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+          minimumFractionDigits: 6,
+          maximumFractionDigits: 6,
+        })}\n`;
+        if (!isMelhor) {
+          const diff = calcularDiferencaPorcentagem(melhorVolume, produto);
+          mensagem += `   📈 ${diff.toFixed(2)}% mais caro por ml\n`;
+        }
+        mensagem += '\n';
+      });
+    }
+
+    if (produtosPeso.length > 0) {
+      mensagem += `⚖️ Produtos por Peso:\n`;
+      produtosPesoOrdenados.forEach((produto, index) => {
+        const precoUnidade = calcularPrecoUnidade(produto);
+        const isMelhor = produto.id === melhorPeso.id;
+        mensagem += `${isMelhor ? '✨' : '•'} ${produto.nome}\n`;
+        mensagem += `   💰 Preço: ${formatarPreco(produto.preco)}\n`;
+        mensagem += `   📦 Quantidade: ${produto.quantidade}${produto.unidade}\n`;
+        mensagem += `   💵 Preço por g: ${precoUnidade.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+          minimumFractionDigits: 6,
+          maximumFractionDigits: 6,
+        })}\n`;
+        if (!isMelhor) {
+          const diff = calcularDiferencaPorcentagem(melhorPeso, produto);
+          mensagem += `   📈 ${diff.toFixed(2)}% mais caro por g\n`;
+        }
+        mensagem += '\n';
+      });
+    }
+
+    mensagem += `\n💡 Dica: Escolha sempre os produtos com menor preço por unidade de medida para economizar!`;
+
+    // Codifica a mensagem para URL
+    const mensagemCodificada = encodeURIComponent(mensagem);
+    
+    // Abre o WhatsApp com a mensagem
+    window.open(`https://wa.me/?text=${mensagemCodificada}`, '_blank');
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Resultado da Comparação</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Resultado da Comparação</h2>
+        {(produtosValidos.length >= 2) && (
+          <button
+            onClick={compartilharNoWhatsApp}
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors"
+            title="Compartilhar no WhatsApp"
+          >
+            <Share2 size={18} />
+            Compartilhar
+          </button>
+        )}
+      </div>
       
       {renderGrupo(produtosVolume, "Produtos Líquidos", melhorVolume)}
       {renderGrupo(produtosPeso, "Produtos por Peso", melhorPeso)}
