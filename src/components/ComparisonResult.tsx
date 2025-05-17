@@ -73,7 +73,7 @@ const ComparisonResult: React.FC<ComparisonResultProps> = ({ produtos }) => {
               <div 
                 key={produto.id}
                 className={`
-                  relative rounded-lg overflow-hidden border shadow-sm
+                  relative rounded-lg overflow-hidden border shadow-sm p-4
                   ${isMelhor ? 'border-green-500 shadow-green-100' : 'border-gray-200'}
                 `}
               >
@@ -87,40 +87,38 @@ const ComparisonResult: React.FC<ComparisonResultProps> = ({ produtos }) => {
                   </div>
                 )}
                 
-                <div className="p-5">
-                  <h4 className="text-lg font-medium text-gray-800 mb-3 pr-20">{produto.nome}</h4>
-                  
-                  <div className="grid grid-cols-2 gap-2 mb-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Preço</p>
-                      <p className="font-semibold">{formatarPreco(produto.preco)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Quantidade</p>
-                      <p className="font-semibold">{produto.quantidade} {produto.unidade}</p>
-                    </div>
+                <h4 className="text-lg font-medium text-gray-800 mb-3 pr-20">{produto.nome}</h4>
+                
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Preço</p>
+                    <p className="font-semibold">{formatarPreco(produto.preco)}</p>
                   </div>
-                  
-                  <div className={`py-3 px-4 rounded-md ${isMelhor ? 'bg-green-50' : 'bg-gray-50'}`}>
-                    <p className="text-sm text-gray-500 mb-1">Preço por unidade</p>
-                    <p className={`font-bold ${isMelhor ? 'text-green-700' : 'text-gray-700'}`}>
-                      {precoUnidade.toLocaleString('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL',
-                        minimumFractionDigits: 6,
-                        maximumFractionDigits: 6,
-                      })} / {unidadeBase}
+                  <div>
+                    <p className="text-sm text-gray-500">Quantidade</p>
+                    <p className="font-semibold">{produto.quantidade} {produto.unidade}</p>
+                  </div>
+                </div>
+                
+                <div className={`py-3 px-4 rounded-md ${isMelhor ? 'bg-green-50' : 'bg-gray-50'}`}>
+                  <p className="text-sm text-gray-500 mb-1">Preço por unidade</p>
+                  <p className={`font-bold ${isMelhor ? 'text-green-700' : 'text-gray-700'}`}>
+                    {precoUnidade.toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                      minimumFractionDigits: 6,
+                      maximumFractionDigits: 6,
+                    })} / {unidadeBase}
+                  </p>
+                </div>
+                
+                {!isMelhor && (
+                  <div className="mt-3 text-right">
+                    <p className="text-red-600 text-sm font-medium">
+                      {diferencaPct.toFixed(2)}% mais caro por {unidadeBase}
                     </p>
                   </div>
-                  
-                  {!isMelhor && (
-                    <div className="mt-3 text-right">
-                      <p className="text-red-600 text-sm font-medium">
-                        {diferencaPct.toFixed(2)}% mais caro por {unidadeBase}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
             );
           })}
