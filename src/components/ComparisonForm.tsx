@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Produto, Comparacao } from '../types';
 import ProductInput from './ProductInput';
 import ComparisonResult from './ComparisonResult';
+import { ShoppingCalculator } from './ShoppingCalculator';
 import { PlusCircle, Save } from 'lucide-react';
 
 interface ComparisonFormProps {
@@ -113,6 +114,12 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({ onSaveComparison }) => 
       </div>
       
       <ComparisonResult produtos={produtos} />
+
+      {/* Calculadora de Compras */}
+      <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Calculadora de Compras</h2>
+        <ShoppingCalculator />
+      </div>
     </div>
   );
 };
