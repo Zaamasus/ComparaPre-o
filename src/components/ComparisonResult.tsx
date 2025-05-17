@@ -143,8 +143,8 @@ const ComparisonResult: React.FC<ComparisonResultProps> = ({ produtos }) => {
         mensagem += `   💵 Preço por ml: ${precoUnidade.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL',
-          minimumFractionDigits: 6,
-          maximumFractionDigits: 6,
+          minimumFractionDigits: 4,
+          maximumFractionDigits: 4,
         })}\n`;
         if (!isMelhor) {
           const diff = calcularDiferencaPorcentagem(melhorVolume, produto);
@@ -165,8 +165,8 @@ const ComparisonResult: React.FC<ComparisonResultProps> = ({ produtos }) => {
         mensagem += `   💵 Preço por g: ${precoUnidade.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL',
-          minimumFractionDigits: 6,
-          maximumFractionDigits: 6,
+          minimumFractionDigits: 4,
+          maximumFractionDigits: 4,
         })}\n`;
         if (!isMelhor) {
           const diff = calcularDiferencaPorcentagem(melhorPeso, produto);
@@ -178,11 +178,20 @@ const ComparisonResult: React.FC<ComparisonResultProps> = ({ produtos }) => {
 
     mensagem += `\n💡 Dica: Escolha sempre os produtos com menor preço por unidade de medida para economizar!`;
 
-    // Codifica a mensagem para URL
-    const mensagemCodificada = encodeURIComponent(mensagem);
-    
-    // Abre o WhatsApp com a mensagem
-    window.open(`https://wa.me/?text=${mensagemCodificada}`, '_blank');
+    try {
+      // Tenta usar a API do WhatsApp Web primeiro
+      const urlWeb = `https://web.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`;
+      
+      // Verifica se está em um dispositivo móvel
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      // Se for mobile, usa a URL do WhatsApp mobile
+      const urlFinal = isMobile ? `whatsapp://send?text=${encodeURIComponent(mensagem)}` : urlWeb;
+      
+      window.open(urlFinal, '_blank');
+    } catch (error) {
+      alert('Não foi possível abrir o WhatsApp. Por favor, tente novamente.');
+    }
   };
 
   return (
@@ -210,6 +219,12 @@ const ComparisonResult: React.FC<ComparisonResultProps> = ({ produtos }) => {
           Para economizar, escolha sempre os produtos com menor preço por unidade de medida.
           Isso garante que você está obtendo mais produto pelo valor investido.
         </p>
+      </div>
+
+      {/* Rodapé com mensagem especial */}
+      <div className="mt-6 text-center text-sm text-gray-500 animate-pulse">
+        <p className="font-semibold italic">~ CATRINE A CHATA ~</p>
+        <p className="text-xs">👑 A Rainha da Economia 👑</p>
       </div>
     </div>
   );

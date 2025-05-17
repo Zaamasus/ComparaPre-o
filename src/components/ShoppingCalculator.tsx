@@ -74,11 +74,20 @@ export const ShoppingCalculator: React.FC = () => {
     const total = items.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
     mensagem += `\n🛍️ Total da Compra: R$ ${total.toFixed(2)}`;
 
-    // Codifica a mensagem para URL
-    const mensagemCodificada = encodeURIComponent(mensagem);
-    
-    // Abre o WhatsApp com a mensagem
-    window.open(`https://wa.me/?text=${mensagemCodificada}`, '_blank');
+    try {
+      // Tenta usar a API do WhatsApp Web primeiro
+      const urlWeb = `https://web.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`;
+      
+      // Verifica se está em um dispositivo móvel
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      // Se for mobile, usa a URL do WhatsApp mobile
+      const urlFinal = isMobile ? `whatsapp://send?text=${encodeURIComponent(mensagem)}` : urlWeb;
+      
+      window.open(urlFinal, '_blank');
+    } catch (error) {
+      alert('Não foi possível abrir o WhatsApp. Por favor, tente novamente.');
+    }
   };
 
   // Calcula o valor total da compra
@@ -194,6 +203,12 @@ export const ShoppingCalculator: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Rodapé com mensagem especial */}
+      <div className="mt-6 text-center text-sm text-gray-500 animate-pulse">
+        <p className="font-semibold italic">~ CATRINE A CHATA ~</p>
+        <p className="text-xs">👑 A Rainha da Economia 👑</p>
+      </div>
     </div>
   );
 }; 
