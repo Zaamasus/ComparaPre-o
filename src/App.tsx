@@ -5,6 +5,7 @@ import ComparisonForm from './components/ComparisonForm';
 import HowItWorks from './components/HowItWorks';
 import SavedComparisons from './components/SavedComparisons';
 import PartnersAds from './components/PartnersAds';
+import { ShoppingCalculator } from './components/ShoppingCalculator';
 import { Comparacao } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
 
@@ -36,12 +37,21 @@ function App() {
                   Descubra qual produto oferece o melhor custo-benefício comparando 
                   preços por unidade de peso ou volume.
                 </p>
-                <a 
-                  href="#comparar" 
-                  className="inline-block bg-white text-blue-700 font-semibold py-2.5 md:py-3 px-5 md:px-6 rounded-lg shadow-md hover:bg-blue-50 transition-colors text-sm md:text-base"
-                >
-                  Começar a Comparar
-                </a>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <a 
+                    href="#comparar" 
+                    className="inline-block bg-white text-blue-700 font-semibold py-2.5 md:py-3 px-5 md:px-6 rounded-lg shadow-md hover:bg-blue-50 transition-colors text-sm md:text-base text-center"
+                  >
+                    Começar a Comparar
+                  </a>
+
+                  <a 
+                    href="#calculadora" 
+                    className="inline-block bg-green-500 text-white font-semibold py-2.5 md:py-3 px-5 md:px-6 rounded-lg shadow-md hover:bg-green-600 transition-colors text-sm md:text-base text-center"
+                  >
+                    Lista de Compras
+                  </a>
+                </div>
               </div>
               <div className="md:w-1/2 md:pl-10 w-full">
                 <div className="bg-blue-800 p-4 md:p-8 rounded-lg shadow-lg transform rotate-1">
@@ -85,6 +95,13 @@ function App() {
         {/* Seção Como Funciona */}
         <section id="como-funciona" className="scroll-mt-[65px]">
           <HowItWorks />
+        </section>
+
+        {/* Seção da Calculadora de Compras */}
+        <section id="calculadora" className="py-8 md:py-16 scroll-mt-[65px] bg-gray-50">
+          <div className="container mx-auto px-4">
+            <ShoppingCalculator />
+          </div>
         </section>
         
         {/* Seção de Anúncios dos Parceiros */}
