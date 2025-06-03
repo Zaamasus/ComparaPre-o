@@ -220,12 +220,6 @@ const ComparisonResult: React.FC<ComparisonResultProps> = ({ produtos }) => {
           Isso garante que você está obtendo mais produto pelo valor investido.
         </p>
       </div>
-
-      {/* Rodapé com mensagem especial */}
-      <div className="mt-6 text-center text-sm text-gray-500 animate-pulse">
-        <p className="font-semibold italic">~ CATRINE A CHATA ~</p>
-        <p className="text-xs">👑 A Rainha da Economia 👑</p>
-      </div>
     </div>
   );
 };

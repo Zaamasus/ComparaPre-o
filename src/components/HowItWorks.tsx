@@ -1,79 +1,55 @@
 import React from 'react';
-import { Calculator, DollarSign, BarChart, Save } from 'lucide-react';
+import { Calculator, Scale, Share2, ShoppingCart } from 'lucide-react';
 
 const HowItWorks: React.FC = () => {
-  const steps = [
-    {
-      icon: <Calculator className="h-10 w-10 md:h-12 md:w-12 text-blue-500" />,
-      title: 'Insira os Detalhes',
-      description: 'Adicione informações como nome, preço e quantidade dos produtos que deseja comparar.'
-    },
-    {
-      icon: <BarChart className="h-10 w-10 md:h-12 md:w-12 text-blue-500" />,
-      title: 'Compare os Valores',
-      description: 'O sistema calcula automaticamente qual opção oferece o melhor custo-benefício.'
-    },
-    {
-      icon: <DollarSign className="h-10 w-10 md:h-12 md:w-12 text-blue-500" />,
-      title: 'Economize Dinheiro',
-      description: 'Visualize a diferença de preço por unidade e escolha a opção mais econômica.'
-    },
-    {
-      icon: <Save className="h-10 w-10 md:h-12 md:w-12 text-blue-500" />,
-      title: 'Salve suas Comparações',
-      description: 'Guarde os resultados para consultar novamente quando precisar.'
-    }
-  ];
-
   return (
-    <section className="py-8 md:py-16 bg-gray-50">
+    <section className="py-12 bg-gradient-to-b from-blue-50 to-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8 md:mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3 md:mb-4">Como Funciona</h2>
-          <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto">
-            O ComparaPreço analisa produtos de diferentes tamanhos e preços para 
-            determinar qual oferece o melhor valor por unidade de medida.
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+            Compare Preços e Economize nas Suas Compras! 🛍️
+          </h2>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Descubra o melhor custo-benefício e organize suas compras de forma inteligente.
+            Nossa calculadora e comparador de preços ajudam você a economizar tempo e dinheiro! 💰
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-          {steps.map((step, index) => (
-            <div key={index} className="bg-white p-4 md:p-6 rounded-lg shadow-md text-center transform transition-transform hover:scale-105">
-              <div className="flex justify-center mb-3 md:mb-4">
-                {step.icon}
-              </div>
-              <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3 text-gray-800">{step.title}</h3>
-              <p className="text-sm md:text-base text-gray-600">{step.description}</p>
-              <div className="mt-3 md:mt-4">
-                <span className="inline-block bg-blue-100 text-blue-800 font-bold rounded-full w-7 h-7 md:w-8 md:h-8 flex items-center justify-center text-sm md:text-base">
-                  {index + 1}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="mt-12 md:mt-16 bg-blue-700 text-white p-4 md:p-8 rounded-lg shadow-lg">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="w-full md:w-2/3 mb-6 md:mb-0 md:pr-8">
-              <h3 className="text-xl md:text-2xl font-bold mb-3">Por que comparar preço por unidade?</h3>
-              <p className="text-sm md:text-base mb-4">
-                Muitas vezes, as embalagens maiores nem sempre são mais econômicas. 
-                Empresas frequentemente usam estratégias de precificação que podem confundir o consumidor.
-              </p>
-              <p className="text-sm md:text-base">
-                Com o ComparaPreço, você consegue identificar rapidamente qual produto 
-                realmente oferece o melhor custo-benefício, economizando dinheiro em suas compras.
-              </p>
-            </div>
-            <div className="w-full md:w-1/3 text-center">
-              <div className="bg-white text-blue-700 rounded-lg p-4 md:p-6 shadow-inner">
-                <p className="text-3xl md:text-4xl font-bold mb-2">30%</p>
-                <p className="text-xs md:text-sm uppercase tracking-wide">
-                  É o quanto você pode economizar comparando preços por unidade
-                </p>
-              </div>
-            </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <Scale className="w-12 h-12 text-blue-500 mb-4 mx-auto" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">Compare Preços</h3>
+            <p className="text-gray-600">
+              Compare preços por unidade (g/kg ou ml/l) e descubra qual produto oferece o melhor valor. 
+              Economize comparando diferentes marcas e tamanhos! 📊
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <Calculator className="w-12 h-12 text-blue-500 mb-4 mx-auto" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">Calcule Suas Compras</h3>
+            <p className="text-gray-600">
+              Use nossa calculadora para organizar sua lista, somar valores e acompanhar o total em tempo real.
+              Mantenha suas compras dentro do orçamento! 🧮
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <ShoppingCart className="w-12 h-12 text-blue-500 mb-4 mx-auto" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">Modo Rápido</h3>
+            <p className="text-gray-600">
+              Adicione itens rapidamente à sua lista ou faça comparações detalhadas.
+              Escolha o modo que melhor se adapta às suas necessidades! ⚡
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <Share2 className="w-12 h-12 text-blue-500 mb-4 mx-auto" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">Compartilhe</h3>
+            <p className="text-gray-600">
+              Compartilhe suas comparações e listas de compras no WhatsApp.
+              Ajude amigos e família a economizarem também! 📱
+            </p>
           </div>
         </div>
       </div>
