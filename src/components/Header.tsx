@@ -18,9 +18,14 @@ const Header: React.FC = () => {
     <header className={`fixed w-full top-0 z-50 ${isScrolled ? 'bg-blue-700/95 backdrop-blur-sm shadow-lg' : 'bg-blue-700'}`}>
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-14">
-          <div className="flex items-center space-x-2">
-            <Scale className="h-6 w-6 text-white" />
-            <span className="text-xl font-bold text-white">ComparaPreço</span>
+          <div className="flex items-center">
+            <div className="flex flex-col">
+              <div className="flex items-center space-x-2">
+                <Scale className="h-6 w-6 text-white" />
+                <span className="text-xl font-bold text-white">ComparaPreço</span>
+              </div>
+              <span className="text-green-400 text-sm ml-8">por Samuel Gomes</span>
+            </div>
           </div>
 
           {/* Menu Desktop */}
