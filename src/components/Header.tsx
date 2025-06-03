@@ -24,7 +24,7 @@ const Header: React.FC = () => {
                 <Scale className="h-6 w-6 text-white" />
                 <span className="text-xl font-bold text-white">ComparaPreço</span>
               </div>
-              <span className="text-green-400 text-sm ml-8">por Samuel Gomes</span>
+              <span className="text-green-400 text-sm ml-8 font-bold">por Samuel Gomes</span>
             </div>
           </div>
 
