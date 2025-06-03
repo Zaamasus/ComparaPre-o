@@ -30,11 +30,14 @@ const Header: React.FC = () => {
 
           {/* Menu Desktop */}
           <div className="hidden md:flex items-center space-x-8">
+            <a href="/" className="text-white hover:text-blue-200 transition-colors">
+              Início
+            </a>
             <a href="#comparar" className="text-white hover:text-blue-200 transition-colors">
               Comparar Preços
             </a>
-            <a href="#calculadora" className="text-white hover:text-blue-200 transition-colors">
-              Lista de Compras
+            <a href="/calculadora.html" className="text-white hover:text-blue-200 transition-colors">
+              Calculadora
             </a>
             <a href="#como-funciona" className="text-white hover:text-blue-200 transition-colors">
               Como Funciona
@@ -55,6 +58,13 @@ const Header: React.FC = () => {
           <div className="md:hidden">
             <div className="py-2">
               <a 
+                href="/" 
+                className="block py-2 text-white hover:text-blue-200 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Início
+              </a>
+              <a 
                 href="#comparar" 
                 className="block py-2 text-white hover:text-blue-200 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
@@ -62,11 +72,11 @@ const Header: React.FC = () => {
                 Comparar Preços
               </a>
               <a 
-                href="#calculadora" 
+                href="/calculadora.html" 
                 className="block py-2 text-white hover:text-blue-200 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Lista de Compras
+                Calculadora
               </a>
               <a 
                 href="#como-funciona" 

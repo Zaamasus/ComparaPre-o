@@ -47,10 +47,10 @@ function App() {
                   </a>
 
                   <a 
-                    href="#calculadora" 
+                    href="/calculadora.html" 
                     className="inline-block bg-green-500 text-white font-semibold py-2.5 md:py-3 px-5 md:px-6 rounded-lg shadow-md hover:bg-green-600 transition-colors text-sm md:text-base text-center"
                   >
-                    Lista de Compras
+                    Abrir Calculadora
                   </a>
                 </div>
               </div>
@@ -98,13 +98,6 @@ function App() {
           <HowItWorks />
         </section>
 
-        {/* Seção da Calculadora de Compras */}
-        <section id="calculadora" className="py-8 md:py-16 scroll-mt-[65px] bg-gray-50">
-          <div className="container mx-auto px-4">
-            <ShoppingCalculator />
-          </div>
-        </section>
-        
         {/* Seção de Anúncios dos Parceiros */}
         <PartnersAds />
         
