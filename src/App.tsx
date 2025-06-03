@@ -31,11 +31,12 @@ function App() {
             <div className="flex flex-col md:flex-row items-center">
               <div className="md:w-1/2 mb-8 md:mb-0">
                 <h1 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">
-                  Compare preços e economize nas suas compras
+                  Compare preços e organize suas compras de forma inteligente
                 </h1>
                 <p className="text-lg md:text-xl mb-6 md:mb-8 text-blue-100">
                   Descubra qual produto oferece o melhor custo-benefício comparando 
-                  preços por unidade de peso ou volume.
+                  preços por unidade de medida e use nossa calculadora para planejar 
+                  suas compras com economia.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <a 
