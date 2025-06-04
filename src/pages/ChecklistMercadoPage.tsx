@@ -215,83 +215,88 @@ const ChecklistMercadoPage: React.FC = () => {
                   <CheckCircle size={18} /> Ir para Lista de Compras
                 </a>
               </div>
-        <section className=" ">
-          <div className="container mx-auto px-4">
-            <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
-              
-              {/* Seletor de listas salvas */}
-              <div className="mb-6">
-                <div className="flex flex-wrap gap-2 items-center mb-2">
-                  <span className="text-sm text-gray-700 font-medium flex items-center gap-1"><List size={16}/> Minhas listas:</span>
-                  {listas.map(lista => (
+        <section className="py-8 md:py-16">
+          <div className="container mx-auto px-4 max-w-2xl">
+            {/* Card de Minhas listas */}
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+              <span className="text-sm text-gray-700 font-medium flex items-center gap-1 mb-2"><List size={16}/> Minhas listas:</span>
+              <div className="flex flex-col gap-2 mb-2">
+                {listas.map(lista => (
+                  <div key={lista.id} className="flex items-center group">
                     <button
-                      key={lista.id}
                       onClick={() => setIdListaAtual(lista.id)}
-                      className={`px-3 py-1 rounded-md border text-sm font-medium flex items-center gap-1 transition-colors ${
+                      className={`flex-1 text-left px-3 py-2 rounded-md border text-sm font-medium transition-colors flex items-center justify-between gap-2 min-w-[90px] ${
                         lista.id === idListaAtual ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                       }`}
+                      style={{ fontVariantNumeric: 'tabular-nums' } as React.CSSProperties}
                       title={`Criada em ${new Date(lista.data).toLocaleDateString('pt-BR')}`}
                     >
                       {lista.nome}
-                      <button
-                        onClick={e => { e.stopPropagation(); excluirLista(lista.id); }}
-                        className="ml-1 text-red-400 hover:text-red-600"
-                        title="Excluir lista"
-                      >
-                        <X size={14}/>
-                      </button>
-                      {lista.id === idListaAtual && (
+                      <span className="flex items-center gap-1">
                         <button
-                          onClick={e => { e.stopPropagation(); iniciarRenomear(); }}
-                          className="ml-1 text-gray-400 hover:text-gray-700"
-                          title="Renomear lista"
+                          onClick={e => { e.stopPropagation(); excluirLista(lista.id); }}
+                          className="text-red-400 hover:text-red-600 opacity-70 group-hover:opacity-100 transition-opacity"
+                          title="Excluir lista"
+                          tabIndex={-1}
                         >
-                          <Edit2 size={14}/>
+                          <X size={16}/>
                         </button>
-                      )}
+                        {lista.id === idListaAtual && (
+                          <button
+                            onClick={e => { e.stopPropagation(); iniciarRenomear(); }}
+                            className="text-gray-400 hover:text-gray-700 opacity-70 group-hover:opacity-100 transition-opacity"
+                            title="Renomear lista"
+                            tabIndex={-1}
+                          >
+                            <Edit2 size={16}/>
+                          </button>
+                        )}
+                      </span>
                     </button>
-                  ))}
-                  <button
-                    onClick={() => setCriandoNova(true)}
-                    className="px-3 py-1 rounded-md border border-green-300 bg-green-50 text-green-700 font-medium flex items-center gap-1 hover:bg-green-100"
-                  >
-                    <FilePlus2 size={16}/> Nova lista
-                  </button>
-                </div>
-                {criandoNova && (
-                  <form onSubmit={criarNovaLista} className="flex gap-2 mt-2">
-                    <input
-                      type="text"
-                      value={nomeNovaLista}
-                      onChange={e => setNomeNovaLista(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="Nome da nova lista"
-                      autoFocus
-                    />
-                    <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-1">
-                      <Plus size={18}/> Criar
-                    </button>
-                    <button type="button" onClick={() => setCriandoNova(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
-                  </form>
-                )}
-                {editandoNome && (
-                  <form onSubmit={e => {e.preventDefault(); salvarNovoNome();}} className="flex gap-2 mt-2">
-                    <input
-                      type="text"
-                      value={novoNomeLista}
-                      onChange={e => setNovoNomeLista(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="Novo nome da lista"
-                      autoFocus
-                    />
-                    <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-1">
-                      <Save size={18}/> Salvar
-                    </button>
-                    <button type="button" onClick={() => setEditandoNome(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
-                  </form>
-                )}
+                  </div>
+                ))}
               </div>
-              {/* Formulário de itens da lista atual */}
+              <button
+                onClick={() => setCriandoNova(true)}
+                className="w-full px-3 py-2 rounded-md border border-green-300 bg-green-50 text-green-700 font-medium flex items-center gap-1 justify-center hover:bg-green-100"
+              >
+                <FilePlus2 size={16}/> Nova lista
+              </button>
+              {criandoNova && (
+                <form onSubmit={criarNovaLista} className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    value={nomeNovaLista}
+                    onChange={e => setNomeNovaLista(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="Nome da nova lista"
+                    autoFocus
+                  />
+                  <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-1">
+                    <Plus size={18}/> Criar
+                  </button>
+                  <button type="button" onClick={() => setCriandoNova(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
+                </form>
+              )}
+              {editandoNome && (
+                <form onSubmit={e => {e.preventDefault(); salvarNovoNome();}} className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    value={novoNomeLista}
+                    onChange={e => setNovoNomeLista(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="Novo nome da lista"
+                    autoFocus
+                  />
+                  <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-1">
+                    <Save size={18}/> Salvar
+                  </button>
+                  <button type="button" onClick={() => setEditandoNome(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
+                </form>
+              )}
+            </div>
+            {/* Card da checklist */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
               {listaAtual ? (
                 <>
                   {modoEdicao && (
