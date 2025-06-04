@@ -17,7 +17,7 @@ const PartnersAds: React.FC = () => {
               <p className="text-gray-500 text-center">
                 Espaço reservado para parceiros
               </p>
-              <p className="text-sm text-blue-400 mt-2">
+              <p  className="text-sm text-blue-400 mt-2" >
                 Entre em contato para anunciar aqui
               </p>
             </div>
