@@ -45,12 +45,12 @@ const App: React.FC = () => {
                         suas compras com economia.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                        <Link 
-                          to="/ComparaPre-o/#comparar" 
+                        <a
+                          href="#comparar"
                           className="inline-block bg-white text-blue-700 font-semibold py-2.5 md:py-3 px-5 md:px-6 rounded-lg shadow-md hover:bg-blue-50 transition-colors text-sm md:text-base text-center"
                         >
                           Começar a Comparar
-                        </Link>
+                        </a>
 
                         <Link 
                           to="/ComparaPre-o/lista-compras" 
