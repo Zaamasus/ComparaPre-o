@@ -72,6 +72,7 @@ const ListaComprasPage: React.FC = () => {
   const sugestoesRef = useRef<HTMLDivElement>(null);
   const [usarObservacao, setUsarObservacao] = useState(false);
   const [mostrarFiltroCategoria, setMostrarFiltroCategoria] = useState(false);
+  const [precoTexto, setPrecoTexto] = useState('');
 
   const categorias = [
     { id: 'Alimentos', nome: 'Alimentos', cor: 'bg-green-100 text-green-800', icone: '🍽️' },
@@ -184,16 +185,31 @@ const ListaComprasPage: React.FC = () => {
     }
   };
 
+  // Função para formatar o valor digitado no input de preço
+  function formatarPrecoInput(valor: string) {
+    // Remove tudo que não for número ou vírgula/ponto
+    let limpo = valor.replace(/[^\d,.]/g, '');
+    // Troca vírgula por ponto para facilitar parseFloat
+    limpo = limpo.replace(',', '.');
+    // Se tiver mais de um ponto, mantém só o primeiro
+    const partes = limpo.split('.');
+    if (partes.length > 2) {
+      limpo = partes[0] + '.' + partes.slice(1).join('');
+    }
+    // Força duas casas decimais
+    const num = parseFloat(limpo);
+    if (isNaN(num)) return '';
+    return num.toFixed(2).replace('.', ',');
+  }
+
   const adicionarItem = (e: React.FormEvent) => {
     e.preventDefault();
     let nomeItem = nome;
     let categoriaItem = categoria;
-    
     if (modoFacil) {
       nomeItem = `Item ${proximoNumeroModoFacil}`;
       categoriaItem = 'Outros';
     }
-    
     const novoItem: ItemCompra = {
       id: Date.now(),
       nome: nomeItem,
@@ -202,11 +218,11 @@ const ListaComprasPage: React.FC = () => {
       categoria: categoriaItem || 'Outros',
       observacao: usarObservacao ? observacao : ''
     };
-    
     setItens([...itens, novoItem]);
     setNome('');
     setQuantidade(1);
     setPreco(null);
+    setPrecoTexto('');
     setCategoria('');
     setObservacao('');
   };
@@ -695,19 +711,23 @@ const ListaComprasPage: React.FC = () => {
                   <div>
                     <label 
                       className="block text-sm font-medium text-gray-700 mb-1 cursor-pointer" 
-                      onClick={() => setPreco(null)}
+                      onClick={() => { setPreco(null); setPrecoTexto(''); }}
                     >
                       Preço (R$)
                     </label>
                     <input
-                      type="number"
-                      value={preco === null ? '' : preco}
-                      onChange={(e) => setPreco(e.target.value === '' ? null : Number(e.target.value))}
-                      step="0.01"
-                      min="0"
+                      type="text"
+                      value={precoTexto}
+                      onChange={e => {
+                        const valorFormatado = formatarPrecoInput(e.target.value);
+                        setPrecoTexto(valorFormatado);
+                        setPreco(valorFormatado ? parseFloat(valorFormatado.replace(',', '.')) : null);
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       required
                       placeholder="0,00"
+                      inputMode="decimal"
+                      pattern="^\\d+(,\\d{0,2})?$"
                     />
                   </div>
                   <div className="md:col-span-2">
