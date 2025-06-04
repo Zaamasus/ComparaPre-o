@@ -1,7 +1,30 @@
 import React, { useState,} from 'react';
-import { Trash2, Plus, Share2, CheckCircle } from 'lucide-react';
+import { Trash2, Plus, Share2, CheckCircle, TrendingUp } from 'lucide-react';
 import useLocalStorage from '../hooks/useLocalStorage';
 import Header from '../components/Header';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface ItemCompra {
   id: number;
@@ -123,6 +146,20 @@ const ListaComprasPage: React.FC = () => {
     : itens;
 
   const total = itensFiltrados.reduce((acc, item) => acc + (item.quantidade * item.preco), 0);
+
+  // Função para formatar data e hora
+  const formatarDataHora = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleString('pt-BR');
+  };
+
+  // Função para formatar preço
+  const formatarPreco = (valor: number) => {
+    return valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
@@ -365,7 +402,7 @@ const ListaComprasPage: React.FC = () => {
             <div className="container mx-auto px-4">
               <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
                 <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-                  <h2 className="text-xl font-bold text-gray-800">Comparativo Mensal do Histórico</h2>
+                  <h2 className="text-xl font-bold text-gray-800">Comparativo do Histórico</h2>
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
@@ -379,122 +416,192 @@ const ListaComprasPage: React.FC = () => {
                     </button>
                   </div>
                 </div>
-                <p className="text-gray-600 text-sm mb-6">Veja abaixo um resumo mensal das suas compras. O painel mostra o total gasto, a quantidade de itens e todas as compras feitas em cada mês. Os destaques indicam o mês com maior gasto (<span className='text-red-600 font-semibold'>vermelho</span>) e o mês com mais itens comprados (<span className='text-blue-600 font-semibold'>azul</span>).</p>
-                {(() => {
-                  // Agrupa por 'YYYY-MM'
-                  const meses: { [mes: string]: CompraHistorico[] } = {};
-                  historico.forEach(compra => {
-                    const data = new Date(compra.data);
-                    const mes = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
-                    if (!meses[mes]) meses[mes] = [];
-                    meses[mes].push(compra);
-                  });
 
-                  // Ordena meses do mais recente para o mais antigo
-                  const mesesOrdenados = Object.entries(meses).sort((a, b) => b[0].localeCompare(a[0]));
+                {/* Gráficos */}
+                <div className="mb-8 space-y-6">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <TrendingUp className="text-blue-600" size={20} />
+                      Evolução dos Gastos
+                    </h3>
+                    <Line
+                      data={{
+                        labels: historico.map(compra => {
+                          const data = new Date(compra.data);
+                          return data.toLocaleDateString('pt-BR');
+                        }).reverse(),
+                        datasets: [
+                          {
+                            label: 'Valor Total (R$)',
+                            data: historico.map(compra => compra.total).reverse(),
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            tension: 0.4,
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        plugins: {
+                          legend: {
+                            position: 'top' as const,
+                          },
+                          tooltip: {
+                            callbacks: {
+                              label: function(context) {
+                                return `R$ ${context.raw?.toString()}`;
+                              }
+                            }
+                          }
+                        },
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            ticks: {
+                              callback: function(value) {
+                                return `R$ ${value}`;
+                              }
+                            }
+                          }
+                        }
+                      }}
+                    />
+                  </div>
 
-                  // Descobre destaques (agora por compra individual)
-                  let compraMaisCara: CompraHistorico | null = null;
-                  let compraMaisItens: CompraHistorico | null = null;
-                  let maiorGasto = 0;
-                  let maiorQtd = 0;
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold mb-4">Quantidade de Itens por Compra</h3>
+                    <Bar
+                      data={{
+                        labels: historico.map(compra => {
+                          const data = new Date(compra.data);
+                          return data.toLocaleDateString('pt-BR');
+                        }).reverse(),
+                        datasets: [
+                          {
+                            label: 'Quantidade de Itens',
+                            data: historico.map(compra => compra.quantidadeTotal).reverse(),
+                            backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                            borderColor: 'rgb(99, 102, 241)',
+                            borderWidth: 1,
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        plugins: {
+                          legend: {
+                            position: 'top' as const,
+                          },
+                        },
+                        scales: {
+                          y: {
+                            beginAtZero: true,
+                            ticks: {
+                              stepSize: 1
+                            }
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
 
-                  historico.forEach((compra) => {
-                    if (compra.total > maiorGasto) {
-                      maiorGasto = compra.total;
-                      compraMaisCara = compra;
-                    }
-                    if (compra.quantidadeTotal > maiorQtd) {
-                      maiorQtd = compra.quantidadeTotal;
-                      compraMaisItens = compra;
-                    }
-                  });
+                {/* Lista de Compras */}
+                <div className="space-y-4">
+                  {historico.map((compra, index) => {
+                    const isUltima = index === 0;
+                    const dataCompra = new Date(compra.data);
+                    const mesAno = dataCompra.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+                    
+                    // Encontra a compra mais cara e com mais itens
+                    const isMaisCara = compra.total === Math.max(...historico.map(c => c.total));
+                    const isMaisItens = compra.quantidadeTotal === Math.max(...historico.map(c => c.quantidadeTotal));
+                    
+                    // Calcula diferenças percentuais em relação à média
+                    const mediaTotal = historico.reduce((acc, c) => acc + c.total, 0) / historico.length;
+                    const mediaItens = historico.reduce((acc, c) => acc + c.quantidadeTotal, 0) / historico.length;
+                    
+                    const diffTotal = ((compra.total - mediaTotal) / mediaTotal) * 100;
+                    const diffItens = ((compra.quantidadeTotal - mediaItens) / mediaItens) * 100;
 
-                  // Função para exibir mês/ano bonito
-                  const formatarMes = (mes: string) => {
-                    const [ano, m] = mes.split('-');
-                    const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-                    return `${nomes[parseInt(m,10)-1]}/${ano}`;
-                  };
+                    return (
+                      <div 
+                        key={compra.id}
+                        className={`rounded-xl p-5 border-2 bg-white
+                          ${isUltima ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
+                          ${isMaisCara ? 'border-red-400' : isMaisItens ? 'border-blue-400' : 'border-gray-200'}
+                        `}
+                      >
+                        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-800">{mesAno}</h3>
+                            <p className="text-sm text-gray-500">{formatarDataHora(compra.data)}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            {isMaisCara && (
+                              <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                                Maior gasto
+                              </span>
+                            )}
+                            {isMaisItens && (
+                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                Mais itens
+                              </span>
+                            )}
+                          </div>
+                        </div>
 
-                  // Função para exibir data e hora completa
-                  const formatarDataHora = (iso: string) => {
-                    const d = new Date(iso);
-                    return d.toLocaleString('pt-BR');
-                  };
+                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-sm text-gray-500">Total da compra:</p>
+                            <p className="text-xl font-bold text-green-700">{formatarPreco(compra.total)}</p>
+                            {!isNaN(diffTotal) && (
+                              <p className={`text-xs ${diffTotal > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                {diffTotal > 0 ? '↑' : '↓'} {Math.abs(diffTotal).toFixed(1)}% em relação à média
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Quantidade de itens:</p>
+                            <p className="text-xl font-bold text-blue-700">{compra.quantidadeTotal}</p>
+                            {!isNaN(diffItens) && (
+                              <p className={`text-xs ${diffItens > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                {diffItens > 0 ? '↑' : '↓'} {Math.abs(diffItens).toFixed(1)}% em relação à média
+                              </p>
+                            )}
+                          </div>
+                        </div>
 
-                  return (
-                    <div className="space-y-8">
-                      {mesesOrdenados.map(([mes, compras]) => (
-                        <div key={mes} className="bg-gray-50 rounded-xl p-6">
-                          <h3 className="text-xl font-bold text-gray-800 mb-4">{formatarMes(mes)}</h3>
-                          <div className="grid gap-4">
-                            {compras.map((compra) => (
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-2">Itens desta compra:</p>
+                          <div className="space-y-2">
+                            {compra.itens.map((item) => (
                               <div 
-                                key={compra.id}
-                                className={`rounded-xl p-5 shadow border-2 bg-white flex flex-col gap-3 relative
-                                  ${compra === compraMaisCara ? 'border-red-400' : ''}
-                                  ${compra === compraMaisItens ? 'border-blue-400' : 'border-gray-200'}
-                                `}
+                                key={item.id}
+                                className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
                               >
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-semibold text-gray-700">
-                                    {formatarDataHora(compra.data)}
-                                  </span>
-                                  {compra === compraMaisCara && (
-                                    <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs font-semibold">
-                                      Maior gasto
-                                    </span>
-                                  )}
-                                  {compra === compraMaisItens && (
-                                    <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold">
-                                      Mais itens
-                                    </span>
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-800">{item.nome}</p>
+                                  {item.observacao && (
+                                    <p className="text-xs text-gray-500">{item.observacao}</p>
                                   )}
                                 </div>
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <span className="text-gray-500 text-sm">Total da compra:</span>
-                                    <p className="font-bold text-green-700 text-lg">
-                                      R$ {compra.total.toFixed(2)}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-500 text-sm">Quantidade de itens:</span>
-                                    <p className="font-bold text-blue-700 text-lg">
-                                      {compra.quantidadeTotal}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div className="mt-2">
-                                  <span className="text-gray-500 text-sm block mb-2">Itens desta compra:</span>
-                                  <div className="grid gap-2">
-                                    {compra.itens.map((item) => (
-                                      <div key={item.id} className="text-sm bg-gray-50 p-2 rounded flex justify-between items-center">
-                                        <div>
-                                          <span className="font-medium">{item.nome}</span>
-                                          {item.observacao && (
-                                            <span className="text-gray-500 text-xs ml-2">({item.observacao})</span>
-                                          )}
-                                        </div>
-                                        <div className="text-right">
-                                          <span className="text-gray-600">{item.quantidade}x</span>
-                                          <span className="ml-2 font-medium">R$ {item.preco.toFixed(2)}</span>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
+                                <div className="text-right">
+                                  <p className="text-sm font-medium text-gray-800">
+                                    {item.quantidade}x {formatarPreco(item.preco)}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Total: {formatarPreco(item.quantidade * item.preco)}
+                                  </p>
                                 </div>
                               </div>
                             ))}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  );
-                })()}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </section>
