@@ -222,33 +222,33 @@ const ChecklistMercadoPage: React.FC = () => {
               <span className="text-sm text-gray-700 font-medium flex items-center gap-1 mb-2"><List size={16}/> Minhas listas:</span>
               <div className="flex flex-col gap-2 mb-2">
                 {listas.map(lista => (
-                  <div key={lista.id} className="flex items-center group">
+                  <div key={lista.id} className="flex items-center group w-full">
                     <button
                       onClick={() => setIdListaAtual(lista.id)}
-                      className={`flex-1 text-left px-3 py-2 rounded-md border text-sm font-medium transition-colors flex items-center justify-between gap-2 min-w-[90px] ${
-                        lista.id === idListaAtual ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                      }`}
+                      className={`flex-1 text-left px-3 py-2 rounded-md border text-sm font-medium transition-colors flex items-center justify-between gap-2 min-w-[90px] w-full`}
                       style={{ fontVariantNumeric: 'tabular-nums' } as React.CSSProperties}
                       title={`Criada em ${new Date(lista.data).toLocaleDateString('pt-BR')}`}
                     >
                       {lista.nome}
-                      <span className="flex items-center gap-1">
+                      <span className="flex flex-col items-center gap-1">
                         <button
                           onClick={e => { e.stopPropagation(); excluirLista(lista.id); }}
-                          className="text-red-400 hover:text-red-600 opacity-70 group-hover:opacity-100 transition-opacity"
+                          className="text-red-400 hover:text-red-600 opacity-70 group-hover:opacity-100 transition-opacity p-2 rounded-md"
                           title="Excluir lista"
                           tabIndex={-1}
+                          style={{ touchAction: 'manipulation' } as React.CSSProperties}
                         >
-                          <X size={16}/>
+                          <X size={20}/>
                         </button>
                         {lista.id === idListaAtual && (
                           <button
                             onClick={e => { e.stopPropagation(); iniciarRenomear(); }}
-                            className="text-gray-400 hover:text-gray-700 opacity-70 group-hover:opacity-100 transition-opacity"
+                            className="text-gray-400 hover:text-gray-700 opacity-70 group-hover:opacity-100 transition-opacity p-2 rounded-md"
                             title="Renomear lista"
                             tabIndex={-1}
+                            style={{ touchAction: 'manipulation' } as React.CSSProperties}
                           >
-                            <Edit2 size={16}/>
+                            <Edit2 size={20}/>
                           </button>
                         )}
                       </span>
@@ -263,7 +263,7 @@ const ChecklistMercadoPage: React.FC = () => {
                 <FilePlus2 size={16}/> Nova lista
               </button>
               {criandoNova && (
-                <form onSubmit={criarNovaLista} className="flex gap-2 mt-2">
+                <form onSubmit={criarNovaLista} className="flex flex-col sm:flex-row gap-2 mt-2 w-full">
                   <input
                     type="text"
                     value={nomeNovaLista}
@@ -272,10 +272,10 @@ const ChecklistMercadoPage: React.FC = () => {
                     placeholder="Nome da nova lista"
                     autoFocus
                   />
-                  <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-1">
+                  <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-1 w-full sm:w-auto justify-center">
                     <Plus size={18}/> Criar
                   </button>
-                  <button type="button" onClick={() => setCriandoNova(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">Cancelar</button>
+                  <button type="button" onClick={() => setCriandoNova(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 w-full sm:w-auto">Cancelar</button>
                 </form>
               )}
               {editandoNome && (
@@ -299,6 +299,7 @@ const ChecklistMercadoPage: React.FC = () => {
             <div className="bg-white rounded-lg shadow-lg p-6">
               {listaAtual ? (
                 <>
+                  <div className="mb-4 text-xl font-semibold text-blue-700 text-center">{listaAtual.nome}</div>
                   {modoEdicao && (
                     <form onSubmit={adicionarItem} className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-6 relative">
                       <div className="sm:col-span-2 relative">
