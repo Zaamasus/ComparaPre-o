@@ -8,6 +8,7 @@ interface ShoppingItem {
   nome: string;
   preco: number;
   quantidade: number;
+  observacao?: string;
 }
 
 export const ShoppingCalculator: React.FC = () => {
@@ -64,30 +65,22 @@ export const ShoppingCalculator: React.FC = () => {
 
     // Adiciona cada item à mensagem
     items.forEach((item, index) => {
-      mensagem += `✨ ${index + 1}. ${item.nome}\n`;
+      mensagem += `${index + 1}. ${item.nome}\n`;
       mensagem += `   📦 Qtd: ${item.quantidade}\n`;
       mensagem += `   💵 Preço: R$ ${item.preco.toFixed(2)}\n`;
-      mensagem += `   💰 Subtotal: R$ ${(item.preco * item.quantidade).toFixed(2)}\n\n`;
+      mensagem += `   💰 Subtotal: R$ ${(item.preco * item.quantidade).toFixed(2)}\n`;
+      if (item.observacao) {
+        mensagem += `   📝 Obs: ${item.observacao}\n`;
+      }
+      mensagem += '\n';
     });
 
     // Adiciona o total
     const total = items.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
     mensagem += `\n🛍️ Total da Compra: R$ ${total.toFixed(2)}`;
 
-    try {
-      // Tenta usar a API do WhatsApp Web primeiro
-      const urlWeb = `https://web.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`;
-      
-      // Verifica se está em um dispositivo móvel
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      
-      // Se for mobile, usa a URL do WhatsApp mobile
-      const urlFinal = isMobile ? `whatsapp://send?text=${encodeURIComponent(mensagem)}` : urlWeb;
-      
-      window.open(urlFinal, '_blank');
-    } catch (error) {
-      alert('Não foi possível abrir o WhatsApp. Por favor, tente novamente.');
-    }
+    const url = `whatsapp://send?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
   };
 
   // Calcula o valor total da compra
@@ -198,8 +191,8 @@ export const ShoppingCalculator: React.FC = () => {
       {/* Exibe o total apenas se houver itens na lista */}
       {items.length > 0 && (
         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-          <div className="text-lg md:text-xl font-bold text-blue-700">
-            Total da Compra: R$ {total.toFixed(2)}
+          <div className="text-lg font-bold text-blue-700">
+            Total: R$ {total.toFixed(2)}
           </div>
         </div>
       )}

@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { Produto, Comparacao } from '../types';
 import ProductInput from './ProductInput';
 import ComparisonResult from './ComparisonResult';
-import { ShoppingCalculator } from './ShoppingCalculator';
 import { PlusCircle, Save } from 'lucide-react';
 
 interface ComparisonFormProps {
@@ -54,7 +53,6 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({ onSaveComparison }) => 
   };
 
   const salvarComparacao = () => {
-    // Filtra apenas produtos com dados válidos
     const produtosValidos = produtos.filter(
       p => p.nome && p.preco > 0 && p.quantidade > 0
     );
@@ -71,8 +69,6 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({ onSaveComparison }) => 
     };
     
     onSaveComparison(novaComparacao);
-    
-    // Feedback visual
     alert('Comparação salva com sucesso!');
   };
 
@@ -100,26 +96,34 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({ onSaveComparison }) => 
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {produtos.map((produto, index) => (
-            <ProductInput
-              key={produto.id}
-              produto={produto}
-              onChange={handleProdutoChange}
-              onRemove={() => removerProduto(produto.id)}
-              removerHabilitado={produtos.length > 2}
-            />
+            <div key={produto.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">Produto {index + 1}</h3>
+                {produtos.length > 2 && (
+                  <button
+                    onClick={() => removerProduto(produto.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
+              <ProductInput
+                produto={produto}
+                onChange={handleProdutoChange}
+                onRemove={() => removerProduto(produto.id)}
+                removerHabilitado={produtos.length > 2}
+              />
+            </div>
           ))}
         </div>
       </div>
       
       <ComparisonResult produtos={produtos} />
 
-      {/* Calculadora de Compras */}
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Calculadora de Compras</h2>
-        <ShoppingCalculator />
-      </div>
+    
     </div>
   );
 };

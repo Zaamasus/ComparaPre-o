@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Scale, Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,29 +20,29 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-14">
           <div className="flex items-center">
-            <div className="flex flex-col">
+            <Link to="/" className="flex flex-col">
               <div className="flex items-center space-x-2">
                 <Scale className="h-6 w-6 text-white" />
                 <span className="text-xl font-bold text-white">ComparaPreço</span>
               </div>
               <span className="text-green-400 text-sm ml-8 font-bold">por Samuel Gomes</span>
-            </div>
+            </Link>
           </div>
 
           {/* Menu Desktop */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="/" className="text-white hover:text-blue-200 transition-colors">
+            <Link to="/" className="text-white hover:text-blue-200 transition-colors">
               Início
-            </a>
-            <a href="#comparar" className="text-white hover:text-blue-200 transition-colors">
+            </Link>
+            <Link to="/#comparar" className="text-white hover:text-blue-200 transition-colors">
               Comparar Preços
-            </a>
-            <a href="/calculadora.html" className="text-white hover:text-blue-200 transition-colors">
-              Calculadora
-            </a>
-            <a href="#como-funciona" className="text-white hover:text-blue-200 transition-colors">
+            </Link>
+            <Link to="/lista-compras" className="text-white hover:text-blue-200 transition-colors">
+              Lista de Compras
+            </Link>
+            <Link to="/#como-funciona" className="text-white hover:text-blue-200 transition-colors">
               Como Funciona
-            </a>
+            </Link>
           </div>
 
           {/* Menu Mobile Button */}
@@ -57,34 +58,34 @@ const Header: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="py-2">
-              <a 
-                href="/" 
+              <Link 
+                to="/" 
                 className="block py-2 text-white hover:text-blue-200 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Início
-              </a>
-              <a 
-                href="#comparar" 
+              </Link>
+              <Link 
+                to="/#comparar" 
                 className="block py-2 text-white hover:text-blue-200 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Comparar Preços
-              </a>
-              <a 
-                href="/calculadora.html" 
+              </Link>
+              <Link 
+                to="/lista-compras" 
                 className="block py-2 text-white hover:text-blue-200 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Calculadora
-              </a>
-              <a 
-                href="#como-funciona" 
+                Lista de Compras
+              </Link>
+              <Link 
+                to="/#como-funciona" 
                 className="block py-2 text-white hover:text-blue-200 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Como Funciona
-              </a>
+              </Link>
             </div>
           </div>
         )}

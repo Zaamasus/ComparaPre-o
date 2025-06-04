@@ -9,108 +9,85 @@ interface ProductInputProps {
   removerHabilitado: boolean;
 }
 
-const ProductInput: React.FC<ProductInputProps> = ({ 
-  produto, 
-  onChange, 
+const ProductInput: React.FC<ProductInputProps> = ({
+  produto,
+  onChange,
   onRemove,
   removerHabilitado
 }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    const novoValor = name === 'preco' || name === 'quantidade' 
-      ? parseFloat(value) || 0 
-      : value;
-    
     onChange({
       ...produto,
-      [name]: novoValor,
+      [name]: name === 'preco' || name === 'quantidade' ? Number(value) : value,
     });
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-4 border-l-4 border-blue-500">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Detalhes do Produto</h3>
-        {removerHabilitado && (
-          <button 
-            onClick={onRemove}
-            className="text-red-500 hover:text-red-700 transition-colors"
-            aria-label="Remover produto"
-          >
-            <Trash2 size={20} />
-          </button>
-        )}
+    <div className="space-y-3">
+      <div>
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Nome do Produto
+        </label>
+        <input
+          type="text"
+          name="nome"
+          value={produto.nome}
+          onChange={handleChange}
+          placeholder="Ex: Detergente Marca X"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+        />
       </div>
-      
-      <div className="grid grid-cols-1 gap-4">
+
+      <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor={`nome-${produto.id}`} className="block text-sm font-medium text-gray-700 mb-1">
-            Nome do Produto
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Preço (R$)
           </label>
           <input
-            type="text"
-            id={`nome-${produto.id}`}
-            name="nome"
-            value={produto.nome}
+            type="number"
+            name="preco"
+            value={produto.preco}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Ex: Detergente Marca X"
+            min="0"
+            step="0.01"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor={`preco-${produto.id}`} className="block text-sm font-medium text-gray-700 mb-1">
-              Preço (R$)
-            </label>
-            <input
-              type="number"
-              id={`preco-${produto.id}`}
-              name="preco"
-              value={produto.preco || ''}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="0,00"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor={`quantidade-${produto.id}`} className="block text-sm font-medium text-gray-700 mb-1">
-              Quantidade
-            </label>
-            <input
-              type="number"
-              id={`quantidade-${produto.id}`}
-              name="quantidade"
-              value={produto.quantidade || ''}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="0"
-            />
-          </div>
-        </div>
-        
+
         <div>
-          <label htmlFor={`unidade-${produto.id}`} className="block text-sm font-medium text-gray-700 mb-1">
-            Unidade de Medida
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Quantidade
           </label>
-          <select
-            id={`unidade-${produto.id}`}
-            name="unidade"
-            value={produto.unidade}
+          <input
+            type="number"
+            name="quantidade"
+            value={produto.quantidade}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="ml">Mililitros (ml)</option>
-            <option value="l">Litros (L)</option>
-            <option value="g">Gramas (g)</option>
-            <option value="kg">Quilogramas (kg)</option>
-          </select>
+            min="0"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Unidade de Medida
+        </label>
+        <select
+          name="unidade"
+          value={produto.unidade}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="ml">Mililitros (ml)</option>
+          <option value="l">Litros (l)</option>
+          <option value="g">Gramas (g)</option>
+          <option value="kg">Quilogramas (kg)</option>
+          <option value="un">Unidades (un)</option>
+        </select>
       </div>
     </div>
   );
