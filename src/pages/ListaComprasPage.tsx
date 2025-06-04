@@ -70,6 +70,7 @@ const ListaComprasPage: React.FC = () => {
     observacao: ''
   });
   const sugestoesRef = useRef<HTMLDivElement>(null);
+  const [usarObservacao, setUsarObservacao] = useState(false);
 
   const categorias = [
     { id: 'Alimentos', nome: 'Alimentos', cor: 'bg-green-100 text-green-800', icone: '🍽️' },
@@ -198,7 +199,7 @@ const ListaComprasPage: React.FC = () => {
       quantidade,
       preco: preco || 0,
       categoria: categoriaItem || 'Outros',
-      observacao
+      observacao: usarObservacao ? observacao : ''
     };
     
     setItens([...itens, novoItem]);
@@ -477,90 +478,107 @@ const ListaComprasPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="bg-white border-b">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="number"
-                    value={orcamento === null ? '' : orcamento}
-                    onChange={(e) => setOrcamento(e.target.value === '' ? null : Number(e.target.value))}
-                    step="0.01"
-                    min="0"
-                    className="w-32 px-2 py-1 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="Orçamento"
-                  />
-                  <span className="text-sm text-gray-500">→</span>
-                  <div className="text-sm">
-                    <span className="text-gray-500">Total: </span>
-                    <span className="font-medium text-gray-700">{formatarPreco(total)}</span>
-                  </div>
-                </div>
-                {orcamento !== null && (
-                  <div className="text-sm">
-                    <span className="text-gray-500">Saldo: </span>
-                    <span className={`font-medium ${orcamento - total >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatarPreco(orcamento - total)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-
         <section className="py-8 md:py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <span className="font-medium text-gray-700">Modo Fácil</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={modoFacil}
-                    onChange={e => {
-                      setModoFacil(e.target.checked);
-                      if (e.target.checked) {
-                        setNome('');
-                        setCategoria('');
-                        setUsarCategoria(false);
-                      }
-                    }}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                </label>
-                <span className="text-xs text-gray-500">(Sem nome/categoria)</span>
+              {/* Orçamento com hierarquia visual */}
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Controle de Orçamento</span>
+                  <div className="h-px flex-1 bg-gray-100"></div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={orcamento === null ? '' : orcamento}
+                        onChange={(e) => setOrcamento(e.target.value === '' ? null : Number(e.target.value))}
+                        step="0.01"
+                        min="0"
+                        className="w-32 px-2 py-1 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        placeholder="Orçamento disponível"
+                      />
+                    </div>
+                    <span className="text-sm text-gray-400">→</span>
+                    <div className="text-sm">
+                      <span className="text-gray-500">Total: </span>
+                      <span className="font-medium text-gray-700">{formatarPreco(total)}</span>
+                    </div>
+                  </div>
+                  {orcamento !== null && (
+                    <div className="text-sm">
+                      <span className="text-gray-500">Saldo: </span>
+                      <span className={`font-medium ${orcamento - total >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatarPreco(orcamento - total)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Adicionar Item</h2>
-                <div className="flex gap-2">
-                  <button
-                    onClick={compartilharLista}
-                    className="flex items-center justify-center bg-green-500 text-white p-2 rounded-md hover:bg-green-600 transition-colors"
-                    disabled={itens.length === 0}
-                    title="Compartilhar"
-                  >
-                    <Share2 size={20} />
-                  </button>
-                  <button
-                    onClick={limparLista}
-                    className="flex items-center justify-center bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors"
-                    disabled={itens.length === 0}
-                    title="Limpar Lista"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                  <button
-                    onClick={finalizarCompra}
-                    className="flex items-center justify-center bg-blue-700 text-white p-2 rounded-md hover:bg-blue-800 transition-colors"
-                    disabled={itens.length === 0}
-                    title="Finalizar e Salvar Compra"
-                  >
-                    <CheckCircle size={20} />
-                  </button>
+              {/* Modo Fácil com hierarquia visual */}
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Configurações</span>
+                  <div className="h-px flex-1 bg-gray-100"></div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-gray-700">Modo Fácil</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={modoFacil}
+                      onChange={e => {
+                        setModoFacil(e.target.checked);
+                        if (e.target.checked) {
+                          setNome('');
+                          setCategoria('');
+                          setUsarCategoria(false);
+                        }
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                  </label>
+                  <span className="text-xs text-gray-500">(Sem nome/categoria)</span>
+                </div>
+              </div>
+
+              {/* Ações com hierarquia visual */}
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Ações</span>
+                  <div className="h-px flex-1 bg-gray-100"></div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold text-gray-800">Adicionar Item</h2>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={compartilharLista}
+                      className="flex items-center justify-center bg-green-500 text-white p-2 rounded-md hover:bg-green-600 transition-colors"
+                      disabled={itens.length === 0}
+                      title="Compartilhar"
+                    >
+                      <Share2 size={20} />
+                    </button>
+                    <button
+                      onClick={limparLista}
+                      className="flex items-center justify-center bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors"
+                      disabled={itens.length === 0}
+                      title="Limpar Lista"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                    <button
+                      onClick={finalizarCompra}
+                      className="flex items-center justify-center bg-blue-700 text-white p-2 rounded-md hover:bg-blue-800 transition-colors"
+                      disabled={itens.length === 0}
+                      title="Finalizar e Salvar Compra"
+                    >
+                      <CheckCircle size={20} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -684,14 +702,34 @@ const ListaComprasPage: React.FC = () => {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Observação</label>
-                    <input
-                      type="text"
-                      value={observacao}
-                      onChange={(e) => setObservacao(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="Adicione uma observação (opcional)"
-                    />
+                    <div className="flex items-center justify-end mb-1">
+                      <label className="flex items-center gap-2 text-sm text-gray-600">
+                        <input
+                          type="checkbox"
+                          checked={usarObservacao}
+                          onChange={(e) => {
+                            setUsarObservacao(e.target.checked);
+                            if (!e.target.checked) {
+                              setObservacao('');
+                            }
+                          }}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        Adicionar observação
+                      </label>
+                    </div>
+                    {usarObservacao && (
+                      <>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Observação</label>
+                        <input
+                          type="text"
+                          value={observacao}
+                          onChange={(e) => setObservacao(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          placeholder="Digite sua observação"
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
                 <button
