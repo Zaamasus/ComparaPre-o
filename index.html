@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ComparaPreço - Compare e Economize</title>
+    <meta name="description" content="Compare preços de produtos por unidade de medida e descubra qual oferece o melhor custo-benefício." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/ComparaPre-o/manifest.json">
+    <meta name="theme-color" content="#000000"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="ComparaPreço">
+    <link rel="apple-touch-icon" href="/ComparaPre-o/icons/icon-192x192.png">
+    <script type="module" crossorigin src="/ComparaPre-o/assets/index-CBlNfPYe.js"></script>
+    <link rel="stylesheet" crossorigin href="/ComparaPre-o/assets/index-2ZZS4XrC.css">
+  <link rel="manifest" href="/ComparaPre-o/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/ComparaPre-o/registerSW.js"></script></head>
+  <body>
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('Service Worker registrado com sucesso:', registration);
+            })
+            .catch(error => {
+              console.log('Falha ao registrar o Service Worker:', error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
