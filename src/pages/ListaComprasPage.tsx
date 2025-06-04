@@ -1,5 +1,5 @@
-import React, { useState,} from 'react';
-import { Trash2, Plus, Share2, CheckCircle, TrendingUp, Database } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Trash2, Plus, Share2, CheckCircle, TrendingUp, Database, PieChart, BarChart, Search, Tag } from 'lucide-react';
 import useLocalStorage from '../hooks/useLocalStorage';
 import Header from '../components/Header';
 import {
@@ -12,8 +12,10 @@ import {
   Tooltip,
   Legend,
   BarElement,
+  ArcElement,
 } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
+import { Line, Bar, Pie } from 'react-chartjs-2';
+import { produtosPreDefinidos } from '../data/produtosPreDefinidos';
 
 ChartJS.register(
   CategoryScale,
@@ -21,6 +23,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend
@@ -54,6 +57,11 @@ const ListaComprasPage: React.FC = () => {
   const [modoFacil, setModoFacil] = useState(false);
   const [contadorFacil, setContadorFacil] = useState(1);
   const [historico, setHistorico] = useLocalStorage<CompraHistorico[]>('historico-compras', []);
+  const [tipoGrafico, setTipoGrafico] = useState<'evolucao' | 'quantidade' | 'categoria'>('evolucao');
+  const [sugestaoSelecionada, setSugestaoSelecionada] = useState(-1);
+  const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
+  const sugestoesRef = useRef<HTMLDivElement>(null);
+  const [usarCategoria, setUsarCategoria] = useState(true);
 
   const categorias = [
     'Alimentos',
@@ -62,6 +70,97 @@ const ListaComprasPage: React.FC = () => {
     'Higiene',
     'Outros'
   ];
+
+  // Função para obter sugestões únicas do histórico e produtos predefinidos
+  const sugestoesProdutos = useMemo(() => {
+    const produtos = new Map<string, string | undefined>();
+    
+    // Adiciona produtos predefinidos
+    produtosPreDefinidos.forEach(produto => {
+      produtos.set(produto.nome, produto.categoria);
+    });
+    
+    // Adiciona produtos do histórico
+    historico.forEach(compra => {
+      compra.itens.forEach(item => {
+        if (!produtos.has(item.nome)) {
+          produtos.set(item.nome, item.categoria);
+        }
+      });
+    });
+    
+    // Adiciona produtos da lista atual
+    itens.forEach(item => {
+      if (!produtos.has(item.nome)) {
+        produtos.set(item.nome, item.categoria);
+      }
+    });
+    
+    return Array.from(produtos.entries()).map(([nome, categoria]) => ({
+      nome,
+      categoria
+    }));
+  }, [historico, itens]);
+
+  // Filtra sugestões baseado no input atual
+  const sugestoesFiltradas = useMemo(() => {
+    if (!nome) return [];
+    const termoBusca = nome.toLowerCase();
+    return sugestoesProdutos
+      .filter(produto => produto.nome.toLowerCase().includes(termoBusca))
+      .slice(0, 5); // Limita a 5 sugestões
+  }, [nome, sugestoesProdutos]);
+
+  // Fecha sugestões quando clicar fora
+  useEffect(() => {
+    const handleClickFora = (event: MouseEvent) => {
+      if (sugestoesRef.current && !sugestoesRef.current.contains(event.target as Node)) {
+        setMostrarSugestoes(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickFora);
+    return () => {
+      document.removeEventListener('mousedown', handleClickFora);
+    };
+  }, []);
+
+  // Função para selecionar uma sugestão
+  const selecionarSugestao = (sugestao: { nome: string; categoria?: string }) => {
+    setNome(sugestao.nome);
+    if (usarCategoria && sugestao.categoria) {
+      setCategoria(sugestao.categoria);
+    }
+    setMostrarSugestoes(false);
+    setSugestaoSelecionada(-1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!sugestoesFiltradas.length) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSugestaoSelecionada(prev => 
+          prev < sugestoesFiltradas.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSugestaoSelecionada(prev => prev > 0 ? prev - 1 : 0);
+        break;
+      case 'Enter':
+        if (sugestaoSelecionada >= 0) {
+          e.preventDefault();
+          selecionarSugestao(sugestoesFiltradas[sugestaoSelecionada]);
+        }
+        break;
+      case 'Escape':
+        setMostrarSugestoes(false);
+        setSugestaoSelecionada(-1);
+        break;
+    }
+  };
 
   const adicionarItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,6 +340,59 @@ const ListaComprasPage: React.FC = () => {
     }
   };
 
+  // Função para encontrar o mês com compra mais cara
+  const mesCompraMaisCara = useMemo(() => {
+    if (historico.length === 0) return null;
+    
+    const compraMaisCara = historico.reduce((max, compra) => 
+      compra.total > max.total ? compra : max
+    , historico[0]);
+    
+    const data = new Date(compraMaisCara.data);
+    return {
+      mes: data.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }),
+      total: compraMaisCara.total
+    };
+  }, [historico]);
+
+  // Dados para o gráfico de pizza por categoria
+  const dadosGraficoPizza = useMemo(() => {
+    if (historico.length === 0) return null;
+
+    const categoriasTotais: Record<string, number> = {};
+    
+    historico.forEach(compra => {
+      compra.itens.forEach(item => {
+        const categoria = item.categoria || 'Outros';
+        if (!categoriasTotais[categoria]) {
+          categoriasTotais[categoria] = 0;
+        }
+        categoriasTotais[categoria] += item.quantidade * item.preco;
+      });
+    });
+
+    const cores = [
+      'rgba(255, 99, 132, 0.8)',
+      'rgba(54, 162, 235, 0.8)',
+      'rgba(255, 206, 86, 0.8)',
+      'rgba(75, 192, 192, 0.8)',
+      'rgba(153, 102, 255, 0.8)',
+    ];
+
+    const labels = Object.keys(categoriasTotais);
+    const data = labels.map(label => categoriasTotais[label]);
+    const backgroundColor = labels.map((_, i) => cores[i % cores.length]);
+
+    return {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor,
+        borderWidth: 1,
+      }],
+    };
+  }, [historico]);
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       <Header />
@@ -255,13 +407,6 @@ const ListaComprasPage: React.FC = () => {
                 Organize suas compras, adicione itens e mantenha o controle do seu orçamento.
                 Planeje suas compras de forma inteligente e economize.
               </p>
-              <button
-                onClick={gerarDadosFicticios}
-                className="inline-flex items-center gap-2 bg-white text-blue-700 px-4 py-2 rounded-md hover:bg-blue-50 transition-colors text-sm font-medium"
-              >
-                <Database size={16} />
-                Gerar Dados de Exemplo
-              </button>
             </div>
           </div>
         </section>
@@ -316,31 +461,92 @@ const ListaComprasPage: React.FC = () => {
               <form onSubmit={adicionarItem} className="mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {!modoFacil && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Item</label>
-                      <input
-                        type="text"
-                        value={nome}
-                        onChange={(e) => setNome(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        required
-                      />
-                    </div>
-                  )}
-                  {!modoFacil && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                      <select
-                        value={categoria}
-                        onChange={(e) => setCategoria(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      >
-                        <option value="">Selecione uma categoria</option>
-                        {categorias.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
-                        ))}
-                      </select>
-                    </div>
+                    <>
+                      <div className="relative">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Item</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={nome}
+                            onChange={(e) => {
+                              setNome(e.target.value);
+                              setMostrarSugestoes(true);
+                              setSugestaoSelecionada(-1);
+                            }}
+                            onFocus={() => setMostrarSugestoes(true)}
+                            onKeyDown={handleKeyDown}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md pr-10"
+                            required
+                            autoComplete="off"
+                            placeholder="Digite o nome do produto..."
+                          />
+                          <Search 
+                            size={18} 
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                          />
+                        </div>
+                        
+                        {/* Sugestões de Autocomplete */}
+                        {mostrarSugestoes && sugestoesFiltradas.length > 0 && (
+                          <div 
+                            ref={sugestoesRef}
+                            className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto"
+                          >
+                            {sugestoesFiltradas.map((sugestao, index) => (
+                              <button
+                                key={sugestao.nome}
+                                type="button"
+                                onClick={() => selecionarSugestao(sugestao)}
+                                className={`w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center justify-between ${
+                                  index === sugestaoSelecionada ? 'bg-blue-50' : ''
+                                }`}
+                              >
+                                <span>{sugestao.nome}</span>
+                                {sugestao.categoria && (
+                                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full flex items-center gap-1">
+                                    <Tag size={12} />
+                                    {sugestao.categoria}
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-sm font-medium text-gray-700">Categoria</label>
+                          <label className="flex items-center gap-2 text-sm text-gray-600">
+                            <input
+                              type="checkbox"
+                              checked={usarCategoria}
+                              onChange={(e) => {
+                                setUsarCategoria(e.target.checked);
+                                if (!e.target.checked) {
+                                  setCategoria('');
+                                }
+                              }}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            Usar categorias
+                          </label>
+                        </div>
+                        <select
+                          value={categoria}
+                          onChange={(e) => setCategoria(e.target.value)}
+                          className={`w-full px-3 py-2 border border-gray-300 rounded-md ${
+                            !usarCategoria ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                          disabled={!usarCategoria}
+                        >
+                          <option value="">Selecione uma categoria</option>
+                          {categorias.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
                   )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
@@ -488,9 +694,15 @@ const ListaComprasPage: React.FC = () => {
           <section className="py-8">
             <div className="container mx-auto px-4">
               <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
-                <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-                  <h2 className="text-xl font-bold text-gray-800">Comparativo do Histórico</h2>
-                  <div className="flex gap-2">
+                <div className="flex items-center justify-between pb-4 mb-2 gap-3 flex-wrap">
+                  <h2 className="text-2xl font-bold mx-auto pb-4 text-gray-800">Comparativo do Histórico</h2>
+                  <div className="flex gap-16 items-center justify-between  mx-auto ">
+                    <button
+                      onClick={gerarDadosFicticios}
+                      className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded text-sm font-semibold border border-blue-300 flex items-center gap-1"
+                    >
+                      Gerar Dados de Exemplo
+                    </button>
                     <button
                       onClick={() => {
                         if(window.confirm('Tem certeza que deseja apagar todo o histórico de compras? Essa ação não pode ser desfeita.')){
@@ -504,93 +716,185 @@ const ListaComprasPage: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Mês com Compra Mais Cara */}
+                {mesCompraMaisCara && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-4 mb-8 ">
+                    <p className="text-yellow-800">
+                      <span className="font-semibold">Mês com maior gasto:</span> {mesCompraMaisCara.mes} - 
+                      <span className="font-bold"> {formatarPreco(mesCompraMaisCara.total)}</span>
+                    </p>
+                  </div>
+                )}
+
+                {/* Seletor de Tipo de Gráfico */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+                  <span className="text-sm font-medium text-gray-700">Visualizar:</span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setTipoGrafico('evolucao')}
+                      className={`flex items-center gap-1 px-2 py-1 rounded text-xs sm:text-sm font-medium ${
+                        tipoGrafico === 'evolucao'
+                          ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      <TrendingUp size={14} />
+                      <span className="hidden sm:inline">Evolução dos</span>
+                      <span>Gastos</span>
+                    </button>
+                    <button
+                      onClick={() => setTipoGrafico('quantidade')}
+                      className={`flex items-center gap-1 px-2 py-1 rounded text-xs sm:text-sm font-medium ${
+                        tipoGrafico === 'quantidade'
+                          ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      <BarChart size={14} />
+                      <span className="hidden sm:inline">Qtd. de</span>
+                      <span>Itens</span>
+                    </button>
+                    <button
+                      onClick={() => setTipoGrafico('categoria')}
+                      className={`flex items-center gap-1 px-2 py-1 rounded text-xs sm:text-sm font-medium ${
+                        tipoGrafico === 'categoria'
+                          ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      <PieChart size={14} />
+                      <span className="hidden sm:inline">Gastos por</span>
+                      <span>Categoria</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Gráficos */}
                 <div className="mb-8 space-y-6">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <TrendingUp className="text-blue-600" size={20} />
-                      Evolução dos Gastos
-                    </h3>
-                    <Line
-                      data={{
-                        labels: historico.map(compra => {
-                          const data = new Date(compra.data);
-                          return data.toLocaleDateString('pt-BR');
-                        }).reverse(),
-                        datasets: [
-                          {
-                            label: 'Valor Total (R$)',
-                            data: historico.map(compra => compra.total).reverse(),
-                            borderColor: 'rgb(59, 130, 246)',
-                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                            tension: 0.4,
+                  {tipoGrafico === 'evolucao' && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+                        <TrendingUp className="text-blue-600" size={18} />
+                        <span className="hidden sm:inline">Evolução dos</span> Gastos
+                      </h3>
+                      <Line
+                        data={{
+                          labels: historico.map(compra => {
+                            const data = new Date(compra.data);
+                            return data.toLocaleDateString('pt-BR');
+                          }).reverse(),
+                          datasets: [
+                            {
+                              label: 'Valor Total (R$)',
+                              data: historico.map(compra => compra.total).reverse(),
+                              borderColor: 'rgb(59, 130, 246)',
+                              backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                              tension: 0.4,
+                            },
+                          ],
+                        }}
+                        options={{
+                          responsive: true,
+                          plugins: {
+                            legend: {
+                              position: 'top' as const,
+                            },
+                            tooltip: {
+                              callbacks: {
+                                label: function(context) {
+                                  return `R$ ${context.raw?.toString()}`;
+                                }
+                              }
+                            }
                           },
-                        ],
-                      }}
-                      options={{
-                        responsive: true,
-                        plugins: {
-                          legend: {
-                            position: 'top' as const,
-                          },
-                          tooltip: {
-                            callbacks: {
-                              label: function(context) {
-                                return `R$ ${context.raw?.toString()}`;
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              ticks: {
+                                callback: function(value) {
+                                  return `R$ ${value}`;
+                                }
                               }
                             }
                           }
-                        },
-                        scales: {
-                          y: {
-                            beginAtZero: true,
-                            ticks: {
-                              callback: function(value) {
-                                return `R$ ${value}`;
-                              }
-                            }
-                          }
-                        }
-                      }}
-                    />
-                  </div>
+                        }}
+                      />
+                    </div>
+                  )}
 
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-4">Quantidade de Itens por Compra</h3>
-                    <Bar
-                      data={{
-                        labels: historico.map(compra => {
-                          const data = new Date(compra.data);
-                          return data.toLocaleDateString('pt-BR');
-                        }).reverse(),
-                        datasets: [
-                          {
-                            label: 'Quantidade de Itens',
-                            data: historico.map(compra => compra.quantidadeTotal).reverse(),
-                            backgroundColor: 'rgba(99, 102, 241, 0.5)',
-                            borderColor: 'rgb(99, 102, 241)',
-                            borderWidth: 1,
+                  {tipoGrafico === 'quantidade' && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+                        <BarChart className="text-blue-600" size={18} />
+                        <span className="hidden sm:inline">Quantidade de</span> Itens
+                      </h3>
+                      <Bar
+                        data={{
+                          labels: historico.map(compra => {
+                            const data = new Date(compra.data);
+                            return data.toLocaleDateString('pt-BR');
+                          }).reverse(),
+                          datasets: [
+                            {
+                              label: 'Quantidade de Itens',
+                              data: historico.map(compra => compra.quantidadeTotal).reverse(),
+                              backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                              borderColor: 'rgb(99, 102, 241)',
+                              borderWidth: 1,
+                            },
+                          ],
+                        }}
+                        options={{
+                          responsive: true,
+                          plugins: {
+                            legend: {
+                              position: 'top' as const,
+                            },
                           },
-                        ],
-                      }}
-                      options={{
-                        responsive: true,
-                        plugins: {
-                          legend: {
-                            position: 'top' as const,
-                          },
-                        },
-                        scales: {
-                          y: {
-                            beginAtZero: true,
-                            ticks: {
-                              stepSize: 1
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              ticks: {
+                                stepSize: 1
+                              }
                             }
                           }
-                        }
-                      }}
-                    />
-                  </div>
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {tipoGrafico === 'categoria' && dadosGraficoPizza && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+                        <PieChart className="text-blue-600" size={18} />
+                        <span className="hidden sm:inline">Gastos por</span> Categoria
+                      </h3>
+                      <div className="aspect-square max-w-md mx-auto">
+                        <Pie
+                          data={dadosGraficoPizza}
+                          options={{
+                            responsive: true,
+                            plugins: {
+                              legend: {
+                                position: 'right' as const,
+                              },
+                              tooltip: {
+                                callbacks: {
+                                  label: function(context) {
+                                    const value = context.raw as number;
+                                    const total = (context.dataset.data as number[]).reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${formatarPreco(value)} (${percentage}%)`;
+                                  }
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Lista de Compras */}
