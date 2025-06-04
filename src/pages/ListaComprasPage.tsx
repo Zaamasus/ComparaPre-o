@@ -24,7 +24,7 @@ const ListaComprasPage: React.FC = () => {
   const [itens, setItens] = useLocalStorage<ItemCompra[]>('lista-compras', []);
   const [nome, setNome] = useState('');
   const [quantidade, setQuantidade] = useState(1);
-  const [preco, setPreco] = useState('0');
+  const [preco, setPreco] = useState(0);
   const [categoria, setCategoria] = useState('');
   const [observacao, setObservacao] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
@@ -52,14 +52,14 @@ const ListaComprasPage: React.FC = () => {
       id: Date.now(),
       nome: nomeItem,
       quantidade,
-      preco: Number(preco) || 0,
+      preco,
       categoria: categoriaItem || 'Outros',
       observacao
     };
     setItens([...itens, novoItem]);
     setNome('');
     setQuantidade(1);
-    setPreco('0');
+    setPreco(0);
     setCategoria('');
     setObservacao('');
     if (modoFacil) setContadorFacil(contadorFacil + 1);
@@ -234,9 +234,7 @@ const ListaComprasPage: React.FC = () => {
                     <input
                       type="number"
                       value={preco}
-                      onChange={(e) => setPreco(e.target.value)}
-                      onFocus={() => preco === '0' && setPreco('')}
-                      onBlur={(e) => e.target.value === '' && setPreco('0')}
+                      onChange={(e) => setPreco(Number(e.target.value))}
                       step="0.01"
                       min="0"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -363,112 +361,143 @@ const ListaComprasPage: React.FC = () => {
 
         {/* Painel comparativo do histórico */}
         {historico.length > 0 && (
-          <div className="mt-10">
-            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-              <h2 className="text-xl font-bold text-gray-800">Comparativo Mensal do Histórico</h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    if(window.confirm('Tem certeza que deseja apagar todo o histórico de compras? Essa ação não pode ser desfeita.')){
-                      setHistorico([]);
+          <section className="py-8">
+            <div className="container mx-auto px-4">
+              <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+                <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                  <h2 className="text-xl font-bold text-gray-800">Comparativo Mensal do Histórico</h2>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        if(window.confirm('Tem certeza que deseja apagar todo o histórico de compras? Essa ação não pode ser desfeita.')){
+                          setHistorico([]);
+                        }
+                      }}
+                      className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded text-sm font-semibold border border-red-300"
+                    >
+                      Limpar Histórico
+                    </button>
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm mb-6">Veja abaixo um resumo mensal das suas compras. O painel mostra o total gasto, a quantidade de itens e todas as compras feitas em cada mês. Os destaques indicam o mês com maior gasto (<span className='text-red-600 font-semibold'>vermelho</span>) e o mês com mais itens comprados (<span className='text-blue-600 font-semibold'>azul</span>).</p>
+                {(() => {
+                  // Agrupa por 'YYYY-MM'
+                  const meses: { [mes: string]: CompraHistorico[] } = {};
+                  historico.forEach(compra => {
+                    const data = new Date(compra.data);
+                    const mes = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+                    if (!meses[mes]) meses[mes] = [];
+                    meses[mes].push(compra);
+                  });
+
+                  // Ordena meses do mais recente para o mais antigo
+                  const mesesOrdenados = Object.entries(meses).sort((a, b) => b[0].localeCompare(a[0]));
+
+                  // Descobre destaques (agora por compra individual)
+                  let compraMaisCara: CompraHistorico | null = null;
+                  let compraMaisItens: CompraHistorico | null = null;
+                  let maiorGasto = 0;
+                  let maiorQtd = 0;
+
+                  historico.forEach((compra) => {
+                    if (compra.total > maiorGasto) {
+                      maiorGasto = compra.total;
+                      compraMaisCara = compra;
                     }
-                  }}
-                  className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded text-sm font-semibold border border-red-300"
-                >
-                  Limpar Histórico
-                </button>
-              </div>
-            </div>
-            <p className="text-gray-600 text-sm mb-6 max-w-2xl">Veja abaixo um resumo mensal das suas compras. O painel mostra o total gasto, a quantidade de itens e todas as compras feitas em cada mês. Os destaques indicam o mês com maior gasto (<span className='text-red-600 font-semibold'>vermelho</span>) e o mês com mais itens comprados (<span className='text-blue-600 font-semibold'>azul</span>).</p>
-            {/* Agrupar compras por mês/ano */}
-            {(() => {
-              // Agrupa por 'YYYY-MM'
-              const meses: { [mes: string]: { total: number; quantidade: number; compras: CompraHistorico[] } } = {};
-              historico.forEach(compra => {
-                const data = new Date(compra.data);
-                const mes = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
-                if (!meses[mes]) meses[mes] = { total: 0, quantidade: 0, compras: [] };
-                meses[mes].total += compra.total;
-                meses[mes].quantidade += compra.quantidadeTotal;
-                meses[mes].compras.push(compra);
-              });
-              // Ordena meses do mais recente para o mais antigo
-              const mesesOrdenados = Object.entries(meses).sort((a, b) => b[0].localeCompare(a[0]));
-              // Descobre destaques
-              let mesMaisCaro = '';
-              let mesMaisItens = '';
-              let maiorGasto = 0;
-              let maiorQtd = 0;
-              mesesOrdenados.forEach(([mes, dados]) => {
-                if (dados.total > maiorGasto) {
-                  maiorGasto = dados.total;
-                  mesMaisCaro = mes;
-                }
-                if (dados.quantidade > maiorQtd) {
-                  maiorQtd = dados.quantidade;
-                  mesMaisItens = mes;
-                }
-              });
-              // Função para exibir mês/ano bonito
-              const formatarMes = (mes: string) => {
-                const [ano, m] = mes.split('-');
-                const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-                return `${nomes[parseInt(m,10)-1]}/${ano}`;
-              };
-              // Função para exibir data bonita
-              const formatarData = (iso: string) => {
-                const d = new Date(iso);
-                return d.toLocaleDateString('pt-BR');
-              };
-              return (
-                <>
-                  <div className="container mx-auto px-4 max-w-7xl">
-                    <div className="grid md:grid-cols-2 gap-6 mb-6">
-                      {mesesOrdenados.map(([mes, dados]) => (
-                        <div key={mes} className={`rounded-xl p-5 shadow border-2 bg-white flex flex-col gap-2 relative ${mes === mesMaisCaro ? 'border-red-400' : mes === mesMaisItens ? 'border-blue-400' : 'border-gray-200'}`}> 
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-lg">{formatarMes(mes)}</span>
-                            {mes === mesMaisCaro && (
-                              <span className="ml-1 px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs font-semibold flex items-center gap-1" title="Mês com maior gasto">
-                                <svg xmlns='http://www.w3.org/2000/svg' className='inline' width='16' height='16' fill='none' viewBox='0 0 24 24'><path fill='currentColor' d='M12 2a1 1 0 0 1 1 1v2.07A7.002 7.002 0 0 1 19 12a7 7 0 0 1-7 7 1 1 0 1 1 0-2 5 5 0 1 0-5-5 1 1 0 1 1-2 0 7.002 7.002 0 0 1 6-6.93V3a1 1 0 0 1 1-1Z'/></svg>
-                                Maior gasto
-                              </span>
-                            )}
-                            {mes === mesMaisItens && (
-                              <span className="ml-1 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold flex items-center gap-1" title="Mês com mais itens comprados">
-                                <svg xmlns='http://www.w3.org/2000/svg' className='inline' width='16' height='16' fill='none' viewBox='0 0 24 24'><path fill='currentColor' d='M12 2a1 1 0 0 1 1 1v2.07A7.002 7.002 0 0 1 19 12a7 7 0 0 1-7 7 1 1 0 1 1 0-2 5 5 0 1 0-5-5 1 1 0 1 1-2 0 7.002 7.002 0 0 1 6-6.93V3a1 1 0 0 1 1-1Z'/></svg>
-                                Mais itens
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-700">Total gasto no mês:</span>
-                            <span className="font-bold text-green-700 text-lg">R$ {dados.total.toFixed(2)}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-700">Itens comprados no mês:</span>
-                            <span className="font-bold text-blue-700 text-lg">{dados.quantidade}</span>
-                          </div>
-                          <div className="text-xs text-gray-500 mb-2">Compras registradas: {dados.compras.length}</div>
-                          <div className="border-t pt-2 mt-2">
-                            <div className="font-semibold text-sm mb-1 text-gray-700">Compras deste mês:</div>
-                            <ul className="text-xs text-gray-600 space-y-1">
-                              {dados.compras.map((compra,) => (
-                                <li key={compra.id} className="flex justify-between">
-                                  <span>{formatarData(compra.data)}</span>
-                                  <span>R$ {compra.total.toFixed(2)} ({compra.quantidadeTotal} itens)</span>
-                                </li>
-                              ))}
-                            </ul>
+                    if (compra.quantidadeTotal > maiorQtd) {
+                      maiorQtd = compra.quantidadeTotal;
+                      compraMaisItens = compra;
+                    }
+                  });
+
+                  // Função para exibir mês/ano bonito
+                  const formatarMes = (mes: string) => {
+                    const [ano, m] = mes.split('-');
+                    const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+                    return `${nomes[parseInt(m,10)-1]}/${ano}`;
+                  };
+
+                  // Função para exibir data e hora completa
+                  const formatarDataHora = (iso: string) => {
+                    const d = new Date(iso);
+                    return d.toLocaleString('pt-BR');
+                  };
+
+                  return (
+                    <div className="space-y-8">
+                      {mesesOrdenados.map(([mes, compras]) => (
+                        <div key={mes} className="bg-gray-50 rounded-xl p-6">
+                          <h3 className="text-xl font-bold text-gray-800 mb-4">{formatarMes(mes)}</h3>
+                          <div className="grid gap-4">
+                            {compras.map((compra) => (
+                              <div 
+                                key={compra.id}
+                                className={`rounded-xl p-5 shadow border-2 bg-white flex flex-col gap-3 relative
+                                  ${compra === compraMaisCara ? 'border-red-400' : ''}
+                                  ${compra === compraMaisItens ? 'border-blue-400' : 'border-gray-200'}
+                                `}
+                              >
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-semibold text-gray-700">
+                                    {formatarDataHora(compra.data)}
+                                  </span>
+                                  {compra === compraMaisCara && (
+                                    <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs font-semibold">
+                                      Maior gasto
+                                    </span>
+                                  )}
+                                  {compra === compraMaisItens && (
+                                    <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold">
+                                      Mais itens
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <span className="text-gray-500 text-sm">Total da compra:</span>
+                                    <p className="font-bold text-green-700 text-lg">
+                                      R$ {compra.total.toFixed(2)}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500 text-sm">Quantidade de itens:</span>
+                                    <p className="font-bold text-blue-700 text-lg">
+                                      {compra.quantidadeTotal}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="mt-2">
+                                  <span className="text-gray-500 text-sm block mb-2">Itens desta compra:</span>
+                                  <div className="grid gap-2">
+                                    {compra.itens.map((item) => (
+                                      <div key={item.id} className="text-sm bg-gray-50 p-2 rounded flex justify-between items-center">
+                                        <div>
+                                          <span className="font-medium">{item.nome}</span>
+                                          {item.observacao && (
+                                            <span className="text-gray-500 text-xs ml-2">({item.observacao})</span>
+                                          )}
+                                        </div>
+                                        <div className="text-right">
+                                          <span className="text-gray-600">{item.quantidade}x</span>
+                                          <span className="ml-2 font-medium">R$ {item.preco.toFixed(2)}</span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       ))}
                     </div>
-                  </div>
-                </>
-              );
-            })()}
-          </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </section>
         )}
       </main>
     </div>
