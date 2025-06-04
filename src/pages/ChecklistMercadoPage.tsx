@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { CheckCircle, Plus, Trash2, Save, FilePlus2, List, Edit2, X } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Plus, Trash2, Save, FilePlus2, List, Edit2, X, CheckCircle } from 'lucide-react';
 import useLocalStorage from '../hooks/useLocalStorage';
-import { useNavigate } from 'react-router-dom';
 import { produtosPreDefinidos } from '../data/produtosPreDefinidos';
 import Header from '../components/Header';
 
@@ -38,8 +37,7 @@ const ChecklistMercadoPage: React.FC = () => {
   const [sugestaoSelecionada, setSugestaoSelecionada] = useState(-1);
   const [editandoNome, setEditandoNome] = useState(false);
   const [novoNomeLista, setNovoNomeLista] = useState('');
-
-  const navigate = useNavigate();
+  const [modoEdicao, setModoEdicao] = useState(false);
 
   // Autocomplete: sugestões de produtos predefinidos
   const sugestoesProdutos = useMemo(() => {
@@ -183,6 +181,16 @@ const ChecklistMercadoPage: React.FC = () => {
     setEditandoNome(false);
   };
 
+  // Corrigir modo de edição ao salvar e ao trocar de lista
+  useEffect(() => {
+    if (listaAtual && listaAtual.itens.length > 0) {
+      setModoEdicao(false);
+    } else {
+      setModoEdicao(true);
+    }
+    // eslint-disable-next-line
+  }, [idListaAtual, listas.length]);
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       <Header />
@@ -199,9 +207,18 @@ const ChecklistMercadoPage: React.FC = () => {
             </div>
           </div>
         </section>
-        <section className="py-8 md:py-16">
+        <div className="container mx-auto px-4 max-w-2xl flex justify-start mb-2 mt-9">
+                <a
+                  href="/ComparaPre-o/lista-compras"
+                  className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-200 transition-colors"
+                >
+                  <CheckCircle size={18} /> Ir para Lista de Compras
+                </a>
+              </div>
+        <section className=" ">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+              
               {/* Seletor de listas salvas */}
               <div className="mb-6">
                 <div className="flex flex-wrap gap-2 items-center mb-2">
@@ -277,71 +294,73 @@ const ChecklistMercadoPage: React.FC = () => {
               {/* Formulário de itens da lista atual */}
               {listaAtual ? (
                 <>
-                  <form onSubmit={adicionarItem} className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-6 relative">
-                    <div className="sm:col-span-2 relative">
+                  {modoEdicao && (
+                    <form onSubmit={adicionarItem} className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-6 relative">
+                      <div className="sm:col-span-2 relative">
+                        <input
+                          type="text"
+                          value={novoItem}
+                          onChange={e => {
+                            setNovoItem(e.target.value);
+                            setMostrarSugestoes(true);
+                            setSugestaoSelecionada(-1);
+                          }}
+                          onFocus={() => setMostrarSugestoes(true)}
+                          onKeyDown={handleKeyDown}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          placeholder="Adicionar novo item..."
+                          autoFocus
+                          autoComplete="off"
+                        />
+                        {/* Sugestões de autocomplete */}
+                        {mostrarSugestoes && sugestoesProdutos.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                            {sugestoesProdutos.map((sugestao, index) => (
+                              <button
+                                key={sugestao.nome}
+                                type="button"
+                                onClick={() => selecionarSugestao(sugestao.nome)}
+                                className={`w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center justify-between ${
+                                  index === sugestaoSelecionada ? 'bg-blue-50' : ''
+                                }`}
+                              >
+                                <span>{sugestao.nome}</span>
+                                {sugestao.categoria && (
+                                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full ml-2">
+                                    {sugestao.categoria}
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       <input
-                        type="text"
-                        value={novoItem}
-                        onChange={e => {
-                          setNovoItem(e.target.value);
-                          setMostrarSugestoes(true);
-                          setSugestaoSelecionada(-1);
-                        }}
-                        onFocus={() => setMostrarSugestoes(true)}
-                        onKeyDown={handleKeyDown}
+                        type="number"
+                        value={quantidade}
+                        onChange={e => setQuantidade(e.target.value === '' ? '' : Number(e.target.value))}
+                        min="1"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        placeholder="Adicionar novo item..."
-                        autoFocus
-                        autoComplete="off"
+                        placeholder="Qtd (opcional)"
                       />
-                      {/* Sugestões de autocomplete */}
-                      {mostrarSugestoes && sugestoesProdutos.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                          {sugestoesProdutos.map((sugestao, index) => (
-                            <button
-                              key={sugestao.nome}
-                              type="button"
-                              onClick={() => selecionarSugestao(sugestao.nome)}
-                              className={`w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center justify-between ${
-                                index === sugestaoSelecionada ? 'bg-blue-50' : ''
-                              }`}
-                            >
-                              <span>{sugestao.nome}</span>
-                              {sugestao.categoria && (
-                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full ml-2">
-                                  {sugestao.categoria}
-                                </span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <input
-                      type="number"
-                      value={quantidade}
-                      onChange={e => setQuantidade(e.target.value === '' ? '' : Number(e.target.value))}
-                      min="1"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="Qtd (opcional)"
-                    />
-                    <input
-                      type="number"
-                      value={valor}
-                      onChange={e => setValor(e.target.value === '' ? '' : Number(e.target.value))}
-                      min="0"
-                      step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="Valor (opcional)"
-                    />
-                    <button
-                      type="submit"
-                      className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-1 justify-center"
-                    >
-                      <Plus size={18} />
-                      Adicionar
-                    </button>
-                  </form>
+                      <input
+                        type="number"
+                        value={valor}
+                        onChange={e => setValor(e.target.value === '' ? '' : Number(e.target.value))}
+                        min="0"
+                        step="0.01"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder="Valor (opcional)"
+                      />
+                      <button
+                        type="submit"
+                        className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-1 justify-center"
+                      >
+                        <Plus size={18} />
+                        Adicionar
+                      </button>
+                    </form>
+                  )}
                   <ul className="space-y-2">
                     {listaAtual.itens.length === 0 && (
                       <li className="text-gray-400 text-center">Nenhum item na checklist.</li>
@@ -367,6 +386,7 @@ const ChecklistMercadoPage: React.FC = () => {
                           onClick={() => removerItem(item.id)}
                           className="text-red-500 hover:text-red-700 p-1"
                           title="Remover"
+                          disabled={!modoEdicao}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -374,19 +394,32 @@ const ChecklistMercadoPage: React.FC = () => {
                     ))}
                   </ul>
                   {listaAtual.itens.length > 0 && (
-                    <div className="flex gap-2 mt-6">
-                      <button
-                        onClick={salvarLista}
-                        className="flex-1 bg-green-600 text-white py-2 rounded-md hover:bg-green-700 font-medium flex items-center justify-center gap-2"
-                      >
-                        <Save size={18}/> Salvar Lista
-                      </button>
-                      <button
-                        onClick={limparChecklist}
-                        className="flex-1 bg-red-100 text-red-700 py-2 rounded-md hover:bg-red-200 font-medium"
-                      >
-                        Limpar Checklist
-                      </button>
+                    <div className="flex gap-2 mt-6 justify-center">
+                      {modoEdicao ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => { salvarLista(); setModoEdicao(false); }}
+                            className="flex-1 bg-green-600 text-white py-2 rounded-md hover:bg-green-700 font-medium flex items-center justify-center gap-2 max-w-xs"
+                          >
+                            <Save size={18}/> Salvar Lista
+                          </button>
+                          <button
+                            onClick={limparChecklist}
+                            className="flex-1 bg-red-100 text-red-700 py-2 rounded-md hover:bg-red-200 font-medium max-w-xs"
+                          >
+                            Limpar Checklist
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setModoEdicao(true)}
+                          className="bg-blue-100 text-blue-700 py-2 px-6 rounded-md hover:bg-blue-200 font-medium mx-auto"
+                          style={{marginTop: '16px'}}
+                        >
+                          Editar Lista
+                        </button>
+                      )}
                     </div>
                   )}
                 </>

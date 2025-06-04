@@ -480,16 +480,16 @@ const ListaComprasPage: React.FC = () => {
         </section>
 
         <section className="py-8 md:py-16">
+          <div className="container mx-auto px-4 max-w-4xl flex justify-start mb-2">
+            <a
+              href="/ComparaPre-o/checklist"
+              className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-200 transition-colors"
+            >
+              <CheckCircle size={18} /> Minha Checklist
+            </a>
+          </div>
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
-              <div className="flex justify-end mb-4">
-                <a
-                  href="/ComparaPre-o/checklist"
-                  className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-200 transition-colors"
-                >
-                  <CheckCircle size={18} /> Minha Checklist
-                </a>
-              </div>
               {/* Orçamento com hierarquia visual */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-2">
