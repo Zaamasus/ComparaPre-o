@@ -71,6 +71,7 @@ const ListaComprasPage: React.FC = () => {
   });
   const sugestoesRef = useRef<HTMLDivElement>(null);
   const [usarObservacao, setUsarObservacao] = useState(false);
+  const [mostrarFiltroCategoria, setMostrarFiltroCategoria] = useState(false);
 
   const categorias = [
     { id: 'Alimentos', nome: 'Alimentos', cor: 'bg-green-100 text-green-800', icone: '🍽️' },
@@ -481,6 +482,14 @@ const ListaComprasPage: React.FC = () => {
         <section className="py-8 md:py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+              <div className="flex justify-end mb-4">
+                <a
+                  href="/ComparaPre-o/checklist"
+                  className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-200 transition-colors"
+                >
+                  <CheckCircle size={18} /> Minha Checklist
+                </a>
+              </div>
               {/* Orçamento com hierarquia visual */}
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-2">
@@ -741,58 +750,72 @@ const ListaComprasPage: React.FC = () => {
                 </button>
               </form>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por Categoria</label>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setFiltroCategoria('')}
-                    className={`w-full flex items-center justify-between px-4 py-2 rounded-lg border transition-colors ${
-                      filtroCategoria === '' 
-                        ? 'bg-blue-50 border-blue-200' 
-                        : 'border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span>🛒</span>
-                      <span>Todas as categorias</span>
-                    </span>
-                    <span className="text-sm">
-                      {itens.length} {itens.length === 1 ? 'item' : 'itens'}
-                    </span>
-                  </button>
-                  
-                  {categorias.map(categoria => {
-                    const stats = contadorCategorias[categoria.id] || { quantidade: 0, total: 0 };
-                    const isSelected = filtroCategoria === categoria.id;
-                    return (
-                      <button
-                        key={categoria.id}
-                        onClick={() => setFiltroCategoria(categoria.id)}
-                        className={`w-full flex items-center justify-between px-4 py-2 rounded-lg border transition-colors ${
-                          isSelected
-                            ? 'bg-green-50 border-green-200'
-                            : 'border-gray-200 hover:bg-gray-50'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span>{categoria.icone}</span>
-                          <span>{categoria.nome}</span>
-                        </span>
-                        <div className="text-right">
-                          <div className="text-sm">
-                            {stats.quantidade} {stats.quantidade === 1 ? 'item' : 'itens'}
-                          </div>
-                          {stats.quantidade > 0 && (
-                            <div className="text-xs text-gray-500">
-                              R$ {stats.total.toFixed(2)}
-                            </div>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+              {/* Checkbox para mostrar filtro de categoria */}
+              <div className="mb-2 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="toggleFiltroCategoria"
+                  checked={mostrarFiltroCategoria}
+                  onChange={e => setMostrarFiltroCategoria(e.target.checked)}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label htmlFor="toggleFiltroCategoria" className="text-sm text-gray-700 cursor-pointer select-none">
+                  Filtrar por categoria
+                </label>
               </div>
+              {mostrarFiltroCategoria && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por Categoria</label>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => setFiltroCategoria('')}
+                      className={`w-full flex items-center justify-between px-4 py-2 rounded-lg border transition-colors ${
+                        filtroCategoria === '' 
+                          ? 'bg-blue-50 border-blue-200' 
+                          : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>🛒</span>
+                        <span>Todas as categorias</span>
+                      </span>
+                      <span className="text-sm">
+                        {itens.length} {itens.length === 1 ? 'item' : 'itens'}
+                      </span>
+                    </button>
+                    {categorias.map(categoria => {
+                      const stats = contadorCategorias[categoria.id] || { quantidade: 0, total: 0 };
+                      const isSelected = filtroCategoria === categoria.id;
+                      return (
+                        <button
+                          key={categoria.id}
+                          onClick={() => setFiltroCategoria(categoria.id)}
+                          className={`w-full flex items-center justify-between px-4 py-2 rounded-lg border transition-colors ${
+                            isSelected
+                              ? 'bg-green-50 border-green-200'
+                              : 'border-gray-200 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span>{categoria.icone}</span>
+                            <span>{categoria.nome}</span>
+                          </span>
+                          <div className="text-right">
+                            <div className="text-sm">
+                              {stats.quantidade} {stats.quantidade === 1 ? 'item' : 'itens'}
+                            </div>
+                            {stats.quantidade > 0 && (
+                              <div className="text-xs text-gray-500">
+                                R$ {stats.total.toFixed(2)}
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Lista responsiva de itens */}
               <div className="block md:hidden space-y-3">

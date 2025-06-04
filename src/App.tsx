@@ -10,6 +10,7 @@ import PartnersAds from './components/PartnersAds';
 import { Comparacao } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
 import CalculadoraPage from './pages/CalculadoraPage';
+import ChecklistMercadoPage from './pages/ChecklistMercadoPage';
 
 const App: React.FC = () => {
   const [comparacoes, setComparacoes] = useLocalStorage<Comparacao[]>('comparacoes', []);
@@ -26,6 +27,7 @@ const App: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-gray-100">
       <Routes>
         <Route path="/ComparaPre-o/lista-compras" element={<ListaComprasPage />} />
+        <Route path="/ComparaPre-o/checklist" element={<ChecklistMercadoPage />} />
         <Route path="/ComparaPre-o/" element={
           <>
             <Header />

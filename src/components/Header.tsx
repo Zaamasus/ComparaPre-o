@@ -40,6 +40,9 @@ const Header: React.FC = () => {
             <Link to="/ComparaPre-o/lista-compras" className="text-white hover:text-blue-200 transition-colors">
               Lista de Compras
             </Link>
+            <Link to="/ComparaPre-o/checklist" className="text-white hover:text-blue-200 transition-colors">
+              Minha Checklist
+            </Link>
             <a href="#como-funciona" className="text-white hover:text-blue-200 transition-colors">
               Como Funciona
             </a>
@@ -78,6 +81,13 @@ const Header: React.FC = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Lista de Compras
+              </Link>
+              <Link 
+                to="/ComparaPre-o/checklist" 
+                className="block py-2 text-white hover:text-blue-200 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Minha Checklist
               </Link>
               <a 
                 href="#como-funciona" 
