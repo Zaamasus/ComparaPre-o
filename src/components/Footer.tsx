@@ -20,7 +20,7 @@ const Footer: React.FC = () => {
               className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white shadow-lg"
             />
             <div className="text-center">
-              <p className="text-lg md:text-xl font-semibold">Samuel Gomes</p>
+              <p className="text-lg md:text-xl font-semibold text-green-400">Samuel Gomes</p>
               <p className="text-sm md:text-base text-gray-300">Desenvolvedor</p>
             </div>
           </div>

@@ -20,7 +20,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-14">
           <div className="flex items-center">
-            <Link to="/" className="flex flex-col">
+            <Link to="/ComparaPre-o/" className="flex flex-col">
               <div className="flex items-center space-x-2">
                 <Scale className="h-6 w-6 text-white" />
                 <span className="text-xl font-bold text-white">ComparaPreço</span>
@@ -31,18 +31,18 @@ const Header: React.FC = () => {
 
           {/* Menu Desktop */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-white hover:text-blue-200 transition-colors">
+            <Link to="/ComparaPre-o/" className="text-white hover:text-blue-200 transition-colors">
               Início
             </Link>
-            <Link to="/#comparar" className="text-white hover:text-blue-200 transition-colors">
+            <a href="#comparar" className="text-white hover:text-blue-200 transition-colors">
               Comparar Preços
-            </Link>
-            <Link to="/lista-compras" className="text-white hover:text-blue-200 transition-colors">
+            </a>
+            <Link to="/ComparaPre-o/lista-compras" className="text-white hover:text-blue-200 transition-colors">
               Lista de Compras
             </Link>
-            <Link to="/#como-funciona" className="text-white hover:text-blue-200 transition-colors">
+            <a href="#como-funciona" className="text-white hover:text-blue-200 transition-colors">
               Como Funciona
-            </Link>
+            </a>
           </div>
 
           {/* Menu Mobile Button */}
@@ -59,33 +59,33 @@ const Header: React.FC = () => {
           <div className="md:hidden">
             <div className="py-2">
               <Link 
-                to="/" 
+                to="/ComparaPre-o/" 
                 className="block py-2 text-white hover:text-blue-200 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Início
               </Link>
-              <Link 
-                to="/#comparar" 
+              <a 
+                href="#comparar" 
                 className="block py-2 text-white hover:text-blue-200 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Comparar Preços
-              </Link>
+              </a>
               <Link 
-                to="/lista-compras" 
+                to="/ComparaPre-o/lista-compras" 
                 className="block py-2 text-white hover:text-blue-200 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Lista de Compras
               </Link>
-              <Link 
-                to="/#como-funciona" 
+              <a 
+                href="#como-funciona" 
                 className="block py-2 text-white hover:text-blue-200 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Como Funciona
-              </Link>
+              </a>
             </div>
           </div>
         )}
