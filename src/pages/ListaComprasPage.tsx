@@ -185,21 +185,14 @@ const ListaComprasPage: React.FC = () => {
     }
   };
 
-  // Função para formatar o valor digitado no input de preço
-  function formatarPrecoInput(valor: string) {
-    // Remove tudo que não for número ou vírgula/ponto
-    let limpo = valor.replace(/[^\d,.]/g, '');
-    // Troca vírgula por ponto para facilitar parseFloat
-    limpo = limpo.replace(',', '.');
-    // Se tiver mais de um ponto, mantém só o primeiro
-    const partes = limpo.split('.');
-    if (partes.length > 2) {
-      limpo = partes[0] + '.' + partes.slice(1).join('');
-    }
-    // Força duas casas decimais
-    const num = parseFloat(limpo);
-    if (isNaN(num)) return '';
-    return num.toFixed(2).replace('.', ',');
+  // Função para aplicar máscara de moeda enquanto digita
+  function maskMoeda(valor: string) {
+    let v = valor.replace(/\D/g, '');
+    v = v.padStart(3, '0');
+    let reais = v.slice(0, -2);
+    let centavos = v.slice(-2);
+    reais = reais.replace(/^0+/, '') || '0';
+    return reais + ',' + centavos;
   }
 
   const adicionarItem = (e: React.FormEvent) => {
@@ -608,10 +601,10 @@ const ListaComprasPage: React.FC = () => {
               </div>
 
               <form onSubmit={adicionarItem} className="mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
                   {!modoFacil && (
                     <>
-                      <div className="relative">
+                      <div className="relative md:col-span-1">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Item</label>
                         <div className="relative">
                           <input
@@ -662,8 +655,7 @@ const ListaComprasPage: React.FC = () => {
                           </div>
                         )}
                       </div>
-
-                      <div>
+                      <div className="md:col-span-1">
                         <div className="flex items-center justify-between mb-1">
                           <label className="block text-sm font-medium text-gray-700">Categoria</label>
                           <label className="flex items-center gap-2 text-sm text-gray-600">
@@ -684,9 +676,7 @@ const ListaComprasPage: React.FC = () => {
                         <select
                           value={categoria}
                           onChange={(e) => setCategoria(e.target.value)}
-                          className={`w-full px-3 py-2 border border-gray-300 rounded-md ${
-                            !usarCategoria ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
+                          className={`w-full px-3 py-2 border border-gray-300 rounded-md ${!usarCategoria ? 'opacity-50 cursor-not-allowed' : ''}`}
                           disabled={!usarCategoria}
                         >
                           <option value="">Selecione uma categoria</option>
@@ -697,7 +687,7 @@ const ListaComprasPage: React.FC = () => {
                       </div>
                     </>
                   )}
-                  <div>
+                  <div className="md:col-span-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
                     <input
                       type="number"
@@ -708,81 +698,77 @@ const ListaComprasPage: React.FC = () => {
                       required
                     />
                   </div>
-                  <div>
-                    <label 
-                      className="block text-sm font-medium text-gray-700 mb-1 cursor-pointer" 
-                      onClick={() => { setPreco(null); setPrecoTexto(''); }}
-                    >
+                  <div className="md:col-span-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 cursor-pointer" onClick={() => { setPreco(null); setPrecoTexto(''); }}>
                       Preço (R$)
                     </label>
-                    <input
-                      type="text"
-                      value={precoTexto}
-                      onChange={e => {
-                        const valorFormatado = formatarPrecoInput(e.target.value);
-                        setPrecoTexto(valorFormatado);
-                        setPreco(valorFormatado ? parseFloat(valorFormatado.replace(',', '.')) : null);
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      required
-                      placeholder="0,00"
-                      inputMode="decimal"
-                      pattern="^\\d+(,\\d{0,2})?$"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <div className="flex items-center justify-end mb-1">
-                      <label className="flex items-center gap-2 text-sm text-gray-600">
-                        <input
-                          type="checkbox"
-                          checked={usarObservacao}
-                          onChange={(e) => {
-                            setUsarObservacao(e.target.checked);
-                            if (!e.target.checked) {
-                              setObservacao('');
-                            }
-                          }}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        Adicionar observação
-                      </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 select-none">R$</span>
+                      <input
+                        type="text"
+                        value={precoTexto}
+                        onChange={e => {
+                          const valorFormatado = maskMoeda(e.target.value);
+                          setPrecoTexto(valorFormatado);
+                          setPreco(parseFloat(valorFormatado.replace(',', '.')));
+                        }}
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
+                        required
+                        placeholder="0,00"
+                        inputMode="numeric"
+                        maxLength={15}
+                      />
                     </div>
-                    {usarObservacao && (
-                      <>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Observação</label>
-                        <input
-                          type="text"
-                          value={observacao}
-                          onChange={(e) => setObservacao(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                          placeholder="Digite sua observação"
-                        />
-                      </>
-                    )}
                   </div>
                 </div>
                 <button
                   type="submit"
-                  className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors md:ml-auto mb-2"
                 >
                   <Plus size={20} />
                   Adicionar Item
                 </button>
+                <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                  <label className="flex items-center gap-2 text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={usarObservacao}
+                      onChange={(e) => {
+                        setUsarObservacao(e.target.checked);
+                        if (!e.target.checked) {
+                          setObservacao('');
+                        }
+                      }}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    Adicionar observação
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      id="toggleFiltroCategoria"
+                      checked={mostrarFiltroCategoria}
+                      onChange={e => setMostrarFiltroCategoria(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    Filtrar por categoria
+                  </label>
+                </div>
+                {usarObservacao && (
+                  <div className="mt-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Observação</label>
+                    <input
+                      type="text"
+                      value={observacao}
+                      onChange={(e) => setObservacao(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      placeholder="Digite sua observação"
+                    />
+                  </div>
+                )}
               </form>
 
               {/* Checkbox para mostrar filtro de categoria */}
-              <div className="mb-2 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="toggleFiltroCategoria"
-                  checked={mostrarFiltroCategoria}
-                  onChange={e => setMostrarFiltroCategoria(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor="toggleFiltroCategoria" className="text-sm text-gray-700 cursor-pointer select-none">
-                  Filtrar por categoria
-                </label>
-              </div>
               {mostrarFiltroCategoria && (
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por Categoria</label>
