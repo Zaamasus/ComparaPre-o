@@ -1,5 +1,5 @@
 import React, { useState,} from 'react';
-import { Trash2, Plus, Share2, CheckCircle, TrendingUp } from 'lucide-react';
+import { Trash2, Plus, Share2, CheckCircle, TrendingUp, Database } from 'lucide-react';
 import useLocalStorage from '../hooks/useLocalStorage';
 import Header from '../components/Header';
 import {
@@ -161,6 +161,86 @@ const ListaComprasPage: React.FC = () => {
     });
   };
 
+  // Função para gerar dados fictícios
+  const gerarDadosFicticios = () => {
+    const produtos = [
+      { nome: 'Arroz', categoria: 'Alimentos', precoMin: 15, precoMax: 25 },
+      { nome: 'Feijão', categoria: 'Alimentos', precoMin: 5, precoMax: 12 },
+      { nome: 'Óleo', categoria: 'Alimentos', precoMin: 8, precoMax: 15 },
+      { nome: 'Macarrão', categoria: 'Alimentos', precoMin: 3, precoMax: 8 },
+      { nome: 'Café', categoria: 'Alimentos', precoMin: 15, precoMax: 30 },
+      { nome: 'Açúcar', categoria: 'Alimentos', precoMin: 3, precoMax: 8 },
+      { nome: 'Leite', categoria: 'Alimentos', precoMin: 4, precoMax: 8 },
+      { nome: 'Pão', categoria: 'Alimentos', precoMin: 5, precoMax: 12 },
+      { nome: 'Detergente', categoria: 'Limpeza', precoMin: 2, precoMax: 5 },
+      { nome: 'Sabão em Pó', categoria: 'Limpeza', precoMin: 15, precoMax: 30 },
+      { nome: 'Amaciante', categoria: 'Limpeza', precoMin: 10, precoMax: 25 },
+      { nome: 'Desinfetante', categoria: 'Limpeza', precoMin: 8, precoMax: 15 },
+      { nome: 'Papel Higiênico', categoria: 'Higiene', precoMin: 12, precoMax: 25 },
+      { nome: 'Shampoo', categoria: 'Higiene', precoMin: 8, precoMax: 20 },
+      { nome: 'Sabonete', categoria: 'Higiene', precoMin: 2, precoMax: 5 },
+      { nome: 'Creme Dental', categoria: 'Higiene', precoMin: 3, precoMax: 8 },
+      { nome: 'Refrigerante', categoria: 'Bebidas', precoMin: 5, precoMax: 12 },
+      { nome: 'Suco', categoria: 'Bebidas', precoMin: 4, precoMax: 10 },
+      { nome: 'Água Mineral', categoria: 'Bebidas', precoMin: 2, precoMax: 5 },
+      { nome: 'Cerveja', categoria: 'Bebidas', precoMin: 12, precoMax: 25 }
+    ];
+
+    const observacoes = [
+      'Promoção',
+      'Marca preferida',
+      'Última unidade',
+      'Preço bom',
+      'Validade próxima',
+      'Embalagem econômica'
+    ];
+
+    // Função para gerar número aleatório entre min e max
+    const aleatorio = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    // Função para gerar data aleatória nos últimos 6 meses
+    const gerarData = () => {
+      const hoje = new Date();
+      const seismesesAtras = new Date();
+      seismesesAtras.setMonth(hoje.getMonth() - 6);
+      return new Date(seismesesAtras.getTime() + Math.random() * (hoje.getTime() - seismesesAtras.getTime()));
+    };
+
+    // Gerar 10 compras aleatórias
+    const novasCompras: CompraHistorico[] = Array.from({ length: 10 }, () => {
+      const numItens = aleatorio(3, 8);
+      const itens: ItemCompra[] = Array.from({ length: numItens }, () => {
+        const produto = produtos[aleatorio(0, produtos.length - 1)];
+        return {
+          id: Date.now() + aleatorio(1, 1000000),
+          nome: produto.nome,
+          quantidade: aleatorio(1, 5),
+          preco: aleatorio(produto.precoMin * 100, produto.precoMax * 100) / 100,
+          categoria: produto.categoria,
+          observacao: Math.random() > 0.7 ? observacoes[aleatorio(0, observacoes.length - 1)] : undefined
+        };
+      });
+
+      const total = itens.reduce((acc, item) => acc + (item.quantidade * item.preco), 0);
+      const quantidadeTotal = itens.reduce((acc, item) => acc + item.quantidade, 0);
+
+      return {
+        id: Date.now().toString() + aleatorio(1, 1000000),
+        data: gerarData().toISOString(),
+        itens,
+        total,
+        quantidadeTotal
+      };
+    });
+
+    // Ordenar por data
+    novasCompras.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
+
+    if (window.confirm('Isso irá substituir todo o seu histórico atual por dados fictícios. Deseja continuar?')) {
+      setHistorico(novasCompras);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       <Header />
@@ -175,6 +255,13 @@ const ListaComprasPage: React.FC = () => {
                 Organize suas compras, adicione itens e mantenha o controle do seu orçamento.
                 Planeje suas compras de forma inteligente e economize.
               </p>
+              <button
+                onClick={gerarDadosFicticios}
+                className="inline-flex items-center gap-2 bg-white text-blue-700 px-4 py-2 rounded-md hover:bg-blue-50 transition-colors text-sm font-medium"
+              >
+                <Database size={16} />
+                Gerar Dados de Exemplo
+              </button>
             </div>
           </div>
         </section>
