@@ -1,0 +1,53 @@
+Passo a Passo para Atualizar o Git e Fazer Deploy
+
+1. VERIFICAR ALTERAÇÕES
+   - Abra o terminal no diretório do projeto
+   - Execute: git status
+   (Isso mostrará todos os arquivos que foram modificados)
+
+2. ADICIONAR ALTERAÇÕES
+   - Para adicionar todos os arquivos modificados:
+     git add .
+   
+   - Ou para adicionar arquivos específicos:
+     git add nome_do_arquivo
+
+3. CRIAR COMMIT
+   - Execute:
+     git commit -m "Descrição das alterações feitas"
+   (Exemplo: git commit -m "Corrigido campo de preço na lista de compras")
+
+4. ENVIAR PARA O GITHUB
+   - Execute:
+     git push origin main
+   (Se seu branch principal for 'master' em vez de 'main', use: git push origin master)
+
+5. FAZER DEPLOY NO VERCEL
+   Opção A - Deploy Automático:
+   - Se você configurou o deploy automático, o Vercel detectará as mudanças automaticamente
+   - Aguarde alguns minutos para as alterações aparecerem no site
+
+   Opção B - Deploy Manual:
+   - Acesse: vercel.com
+   - Faça login na sua conta
+   - Selecione o projeto
+   - Clique em "Deploy"
+   - Aguarde o processo de build e deploy finalizar
+
+6. VERIFICAR DEPLOY
+   - Acesse o site após o deploy
+   - Teste as novas funcionalidades
+   - Verifique se tudo está funcionando corretamente
+
+OBSERVAÇÕES IMPORTANTES:
+- Sempre faça um git pull antes de começar novas alterações
+- Verifique se não há conflitos antes de fazer push
+- Mantenha backups do seu código
+- Em caso de erro no deploy, verifique os logs no Vercel
+
+COMANDOS ÚTEIS:
+- git status : ver arquivos modificados
+- git pull : atualizar repositório local
+- git log : ver histórico de commits
+- git branch : ver em qual branch você está
+- git checkout -b nova-branch : criar nova branch 

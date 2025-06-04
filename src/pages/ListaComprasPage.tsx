@@ -24,7 +24,7 @@ const ListaComprasPage: React.FC = () => {
   const [itens, setItens] = useLocalStorage<ItemCompra[]>('lista-compras', []);
   const [nome, setNome] = useState('');
   const [quantidade, setQuantidade] = useState(1);
-  const [preco, setPreco] = useState(0);
+  const [preco, setPreco] = useState('0');
   const [categoria, setCategoria] = useState('');
   const [observacao, setObservacao] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
@@ -52,14 +52,14 @@ const ListaComprasPage: React.FC = () => {
       id: Date.now(),
       nome: nomeItem,
       quantidade,
-      preco,
+      preco: Number(preco) || 0,
       categoria: categoriaItem || 'Outros',
       observacao
     };
     setItens([...itens, novoItem]);
     setNome('');
     setQuantidade(1);
-    setPreco(0);
+    setPreco('0');
     setCategoria('');
     setObservacao('');
     if (modoFacil) setContadorFacil(contadorFacil + 1);
@@ -234,7 +234,9 @@ const ListaComprasPage: React.FC = () => {
                     <input
                       type="number"
                       value={preco}
-                      onChange={(e) => setPreco(Number(e.target.value))}
+                      onChange={(e) => setPreco(e.target.value)}
+                      onFocus={() => preco === '0' && setPreco('')}
+                      onBlur={(e) => e.target.value === '' && setPreco('0')}
                       step="0.01"
                       min="0"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"

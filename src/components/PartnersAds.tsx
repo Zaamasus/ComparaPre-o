@@ -17,9 +17,13 @@ const PartnersAds: React.FC = () => {
               <p className="text-gray-500 text-center">
                 Espaço reservado para parceiros
               </p>
-              <p  className="text-sm text-blue-400 mt-2" >
+              <a 
+                href="mailto:samuelginformatica@gmail.com?subject=Interesse em Anunciar no ComparaPreço" 
+                className="text-sm text-blue-500 hover:text-blue-700 mt-2 flex items-center transition-colors"
+              >
+                <Mail className="h-4 w-4 mr-1" />
                 Entre em contato para anunciar aqui
-              </p>
+              </a>
             </div>
           ))}
         </div>
@@ -29,7 +33,7 @@ const PartnersAds: React.FC = () => {
             Interessado em anunciar? Entre em contato conosco:
           </p>
           <a 
-            href="samuelginformatica@gmail.com" 
+            href="mailto:samuelginformatica@gmail.com?subject=Interesse em Anunciar no ComparaPreço" 
             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
           >
             <Mail className="h-5 w-5 mr-2" />
