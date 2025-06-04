@@ -60,6 +60,13 @@ const App: React.FC = () => {
                         >
                           Abrir Lista de Compras
                         </Link>
+
+                        <Link
+                          to="/ComparaPre-o/checklist"
+                          className="inline-block bg-blue-100 text-blue-700 font-semibold py-2.5 md:py-3 px-5 md:px-6 rounded-lg shadow-md hover:bg-blue-200 transition-colors text-sm md:text-base text-center"
+                        >
+                          Abrir Checklist
+                        </Link>
                       </div>
                     </div>
                     <div className="md:w-1/2 md:pl-10 w-full">
