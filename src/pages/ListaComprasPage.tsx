@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Trash2, Plus, Share2, CheckCircle, TrendingUp, Database, PieChart, BarChart, Search, Tag } from 'lucide-react';
+import { Trash2, Plus, Share2, CheckCircle, TrendingUp, PieChart, BarChart, Search, Tag, Pencil, X } from 'lucide-react';
 import useLocalStorage from '../hooks/useLocalStorage';
 import Header from '../components/Header';
 import {
@@ -50,26 +50,46 @@ const ListaComprasPage: React.FC = () => {
   const [itens, setItens] = useLocalStorage<ItemCompra[]>('lista-compras', []);
   const [nome, setNome] = useState('');
   const [quantidade, setQuantidade] = useState(1);
-  const [preco, setPreco] = useState(0);
+  const [preco, setPreco] = useState<number | null>(null);
   const [categoria, setCategoria] = useState('');
   const [observacao, setObservacao] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [modoFacil, setModoFacil] = useState(false);
-  const [contadorFacil, setContadorFacil] = useState(1);
+  const [usarCategoria, setUsarCategoria] = useState(true);
   const [historico, setHistorico] = useLocalStorage<CompraHistorico[]>('historico-compras', []);
   const [tipoGrafico, setTipoGrafico] = useState<'evolucao' | 'quantidade' | 'categoria'>('evolucao');
   const [sugestaoSelecionada, setSugestaoSelecionada] = useState(-1);
   const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
+  const [orcamento, setOrcamento] = useLocalStorage<number | null>('orcamento-compras', null);
+  const [editandoItem, setEditandoItem] = useState<ItemCompra | null>(null);
+  const [editandoValores, setEditandoValores] = useState({
+    nome: '',
+    quantidade: 1,
+    preco: 0,
+    categoria: '',
+    observacao: ''
+  });
   const sugestoesRef = useRef<HTMLDivElement>(null);
-  const [usarCategoria, setUsarCategoria] = useState(true);
 
   const categorias = [
-    'Alimentos',
-    'Bebidas',
-    'Limpeza',
-    'Higiene',
-    'Outros'
+    { id: 'Alimentos', nome: 'Alimentos', cor: 'bg-green-100 text-green-800', icone: '🍽️' },
+    { id: 'Bebidas', nome: 'Bebidas', cor: 'bg-blue-100 text-blue-800', icone: '🥤' },
+    { id: 'Limpeza', nome: 'Limpeza', cor: 'bg-purple-100 text-purple-800', icone: '🧹' },
+    { id: 'Higiene', nome: 'Higiene', cor: 'bg-pink-100 text-pink-800', icone: '🧴' },
+    { id: 'Outros', nome: 'Outros', cor: 'bg-gray-100 text-gray-800', icone: '📦' }
   ];
+
+  // Calcular o próximo número para o modo fácil baseado nos itens existentes
+  const proximoNumeroModoFacil = useMemo(() => {
+    const itensNumerados = itens
+      .filter(item => item.nome.startsWith('Item '))
+      .map(item => {
+        const numero = parseInt(item.nome.replace('Item ', ''));
+        return isNaN(numero) ? 0 : numero;
+      });
+    
+    return itensNumerados.length > 0 ? Math.max(...itensNumerados) + 1 : 1;
+  }, [itens]);
 
   // Função para obter sugestões únicas do histórico e produtos predefinidos
   const sugestoesProdutos = useMemo(() => {
@@ -166,25 +186,60 @@ const ListaComprasPage: React.FC = () => {
     e.preventDefault();
     let nomeItem = nome;
     let categoriaItem = categoria;
+    
     if (modoFacil) {
-      nomeItem = `Item ${contadorFacil}`;
+      nomeItem = `Item ${proximoNumeroModoFacil}`;
       categoriaItem = 'Outros';
     }
+    
     const novoItem: ItemCompra = {
       id: Date.now(),
       nome: nomeItem,
       quantidade,
-      preco,
+      preco: preco || 0,
       categoria: categoriaItem || 'Outros',
       observacao
     };
+    
     setItens([...itens, novoItem]);
     setNome('');
     setQuantidade(1);
-    setPreco(0);
+    setPreco(null);
     setCategoria('');
     setObservacao('');
-    if (modoFacil) setContadorFacil(contadorFacil + 1);
+  };
+
+  const iniciarEdicao = (item: ItemCompra) => {
+    setEditandoItem(item);
+    setEditandoValores({
+      nome: item.nome,
+      quantidade: item.quantidade,
+      preco: item.preco,
+      categoria: item.categoria || '',
+      observacao: item.observacao || ''
+    });
+  };
+
+  const salvarEdicaoInline = (itemId: number) => {
+    const itensAtualizados = itens.map(item => 
+      item.id === itemId 
+        ? {
+            ...item,
+            nome: editandoValores.nome,
+            quantidade: editandoValores.quantidade,
+            preco: editandoValores.preco,
+            categoria: editandoValores.categoria || 'Outros',
+            observacao: editandoValores.observacao
+          }
+        : item
+    );
+
+    setItens(itensAtualizados);
+    setEditandoItem(null);
+  };
+
+  const cancelarEdicaoInline = () => {
+    setEditandoItem(null);
   };
 
   const removerItem = (id: number) => {
@@ -194,7 +249,6 @@ const ListaComprasPage: React.FC = () => {
   const limparLista = () => {
     if (window.confirm('Tem certeza que deseja limpar toda a lista?')) {
       setItens([]);
-      setContadorFacil(1);
     }
   };
 
@@ -212,7 +266,6 @@ const ListaComprasPage: React.FC = () => {
     };
     setHistorico([novaCompra, ...historico]);
     setItens([]);
-    setContadorFacil(1);
     alert('Compra salva no histórico!');
   };
 
@@ -393,6 +446,19 @@ const ListaComprasPage: React.FC = () => {
     };
   }, [historico]);
 
+  const contadorCategorias = useMemo(() => {
+    const contador: Record<string, { quantidade: number; total: number }> = {};
+    itens.forEach(item => {
+      const categoria = item.categoria || 'Outros';
+      if (!contador[categoria]) {
+        contador[categoria] = { quantidade: 0, total: 0 };
+      }
+      contador[categoria].quantidade += 1;
+      contador[categoria].total += item.quantidade * item.preco;
+    });
+    return contador;
+  }, [itens]);
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       <Header />
@@ -411,6 +477,39 @@ const ListaComprasPage: React.FC = () => {
           </div>
         </section>
 
+        <section className="bg-white border-b">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    value={orcamento === null ? '' : orcamento}
+                    onChange={(e) => setOrcamento(e.target.value === '' ? null : Number(e.target.value))}
+                    step="0.01"
+                    min="0"
+                    className="w-32 px-2 py-1 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Orçamento"
+                  />
+                  <span className="text-sm text-gray-500">→</span>
+                  <div className="text-sm">
+                    <span className="text-gray-500">Total: </span>
+                    <span className="font-medium text-gray-700">{formatarPreco(total)}</span>
+                  </div>
+                </div>
+                {orcamento !== null && (
+                  <div className="text-sm">
+                    <span className="text-gray-500">Saldo: </span>
+                    <span className={`font-medium ${orcamento - total >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatarPreco(orcamento - total)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="py-8 md:py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
@@ -421,7 +520,14 @@ const ListaComprasPage: React.FC = () => {
                     type="checkbox"
                     className="sr-only peer"
                     checked={modoFacil}
-                    onChange={e => setModoFacil(e.target.checked)}
+                    onChange={e => {
+                      setModoFacil(e.target.checked);
+                      if (e.target.checked) {
+                        setNome('');
+                        setCategoria('');
+                        setUsarCategoria(false);
+                      }
+                    }}
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
                 </label>
@@ -542,7 +648,7 @@ const ListaComprasPage: React.FC = () => {
                         >
                           <option value="">Selecione uma categoria</option>
                           {categorias.map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
+                            <option key={cat.id} value={cat.id}>{cat.nome}</option>
                           ))}
                         </select>
                       </div>
@@ -560,15 +666,21 @@ const ListaComprasPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
+                    <label 
+                      className="block text-sm font-medium text-gray-700 mb-1 cursor-pointer" 
+                      onClick={() => setPreco(null)}
+                    >
+                      Preço (R$)
+                    </label>
                     <input
                       type="number"
-                      value={preco}
-                      onChange={(e) => setPreco(Number(e.target.value))}
+                      value={preco === null ? '' : preco}
+                      onChange={(e) => setPreco(e.target.value === '' ? null : Number(e.target.value))}
                       step="0.01"
                       min="0"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       required
+                      placeholder="0,00"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -592,17 +704,56 @@ const ListaComprasPage: React.FC = () => {
               </form>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Filtrar por Categoria</label>
-                <select
-                  value={filtroCategoria}
-                  onChange={(e) => setFiltroCategoria(e.target.value)}
-                  className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Todas as categorias</option>
-                  {categorias.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filtrar por Categoria</label>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setFiltroCategoria('')}
+                    className={`w-full flex items-center justify-between px-4 py-2 rounded-lg border transition-colors ${
+                      filtroCategoria === '' 
+                        ? 'bg-blue-50 border-blue-200' 
+                        : 'border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>🛒</span>
+                      <span>Todas as categorias</span>
+                    </span>
+                    <span className="text-sm">
+                      {itens.length} {itens.length === 1 ? 'item' : 'itens'}
+                    </span>
+                  </button>
+                  
+                  {categorias.map(categoria => {
+                    const stats = contadorCategorias[categoria.id] || { quantidade: 0, total: 0 };
+                    const isSelected = filtroCategoria === categoria.id;
+                    return (
+                      <button
+                        key={categoria.id}
+                        onClick={() => setFiltroCategoria(categoria.id)}
+                        className={`w-full flex items-center justify-between px-4 py-2 rounded-lg border transition-colors ${
+                          isSelected
+                            ? 'bg-green-50 border-green-200'
+                            : 'border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>{categoria.icone}</span>
+                          <span>{categoria.nome}</span>
+                        </span>
+                        <div className="text-right">
+                          <div className="text-sm">
+                            {stats.quantidade} {stats.quantidade === 1 ? 'item' : 'itens'}
+                          </div>
+                          {stats.quantidade > 0 && (
+                            <div className="text-xs text-gray-500">
+                              R$ {stats.total.toFixed(2)}
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Lista responsiva de itens */}
@@ -612,21 +763,86 @@ const ListaComprasPage: React.FC = () => {
                 )}
                 {itensFiltrados.map(item => (
                   <div key={item.id} className="bg-gray-50 rounded-lg p-3 shadow flex flex-col gap-1 relative">
-                    <button
-                      onClick={() => removerItem(item.id)}
-                      className="absolute top-2 right-2 text-red-600 hover:text-red-800"
-                      title="Remover"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                    <div className="font-bold text-blue-700">{item.nome}</div>
-                    {item.observacao && (
-                      <div className="text-xs text-gray-500">{item.observacao}</div>
+                    {editandoItem?.id === item.id ? (
+                      <>
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editandoValores.nome}
+                            onChange={(e) => setEditandoValores(prev => ({ ...prev, nome: e.target.value }))}
+                            className="w-full px-2 py-1 border border-gray-300 rounded-md"
+                            placeholder="Nome do item"
+                          />
+                          <select
+                            value={editandoValores.categoria}
+                            onChange={(e) => setEditandoValores(prev => ({ ...prev, categoria: e.target.value }))}
+                            className="w-full px-2 py-1 border border-gray-300 rounded-md"
+                          >
+                            {categorias.map(cat => (
+                              <option key={cat.id} value={cat.id}>{cat.nome}</option>
+                            ))}
+                          </select>
+                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              value={editandoValores.quantidade}
+                              onChange={(e) => setEditandoValores(prev => ({ ...prev, quantidade: Number(e.target.value) }))}
+                              min="1"
+                              className="w-20 px-2 py-1 border border-gray-300 rounded-md"
+                            />
+                            <input
+                              type="number"
+                              value={editandoValores.preco}
+                              onChange={(e) => setEditandoValores(prev => ({ ...prev, preco: Number(e.target.value) }))}
+                              step="0.01"
+                              min="0"
+                              className="w-24 px-2 py-1 border border-gray-300 rounded-md"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => salvarEdicaoInline(item.id)}
+                            className="flex-1 bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700"
+                          >
+                            Salvar
+                          </button>
+                          <button
+                            onClick={cancelarEdicaoInline}
+                            className="flex-1 bg-gray-600 text-white px-3 py-1 rounded-md hover:bg-gray-700"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex gap-2 absolute top-2 right-2">
+                          <button
+                            onClick={() => iniciarEdicao(item)}
+                            className="text-blue-600 hover:text-blue-800"
+                            title="Editar"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            onClick={() => removerItem(item.id)}
+                            className="text-red-600 hover:text-red-800"
+                            title="Remover"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                        <div className="font-bold text-blue-700">{item.nome}</div>
+                        {item.observacao && (
+                          <div className="text-xs text-gray-500">{item.observacao}</div>
+                        )}
+                        <div className="text-xs text-gray-600">Categoria: <span className="font-medium">{item.categoria}</span></div>
+                        <div className="text-xs text-gray-600">Quantidade: <span className="font-medium">{item.quantidade}</span></div>
+                        <div className="text-xs text-gray-600">Preço Unit.: <span className="font-medium">R$ {item.preco.toFixed(2)}</span></div>
+                        <div className="text-xs text-gray-600">Total: <span className="font-medium">R$ {(item.quantidade * item.preco).toFixed(2)}</span></div>
+                      </>
                     )}
-                    <div className="text-xs text-gray-600">Categoria: <span className="font-medium">{item.categoria}</span></div>
-                    <div className="text-xs text-gray-600">Quantidade: <span className="font-medium">{item.quantidade}</span></div>
-                    <div className="text-xs text-gray-600">Preço Unit.: <span className="font-medium">R$ {item.preco.toFixed(2)}</span></div>
-                    <div className="text-xs text-gray-600">Total: <span className="font-medium">R$ {(item.quantidade * item.preco).toFixed(2)}</span></div>
                   </div>
                 ))}
                 {itensFiltrados.length > 0 && (
@@ -653,25 +869,103 @@ const ListaComprasPage: React.FC = () => {
                     {itensFiltrados.map(item => (
                       <tr key={item.id} className="border-b hover:bg-gray-50">
                         <td className="px-4 py-2">
-                          <div>
-                            <div className="font-medium">{item.nome}</div>
-                            {item.observacao && (
-                              <div className="text-sm text-gray-500">{item.observacao}</div>
-                            )}
-                          </div>
+                          {editandoItem?.id === item.id ? (
+                            <input
+                              type="text"
+                              value={editandoValores.nome}
+                              onChange={(e) => setEditandoValores(prev => ({ ...prev, nome: e.target.value }))}
+                              className="w-full px-2 py-1 border border-gray-300 rounded-md"
+                            />
+                          ) : (
+                            <div>
+                              <div className="font-medium">{item.nome}</div>
+                              {item.observacao && (
+                                <div className="text-sm text-gray-500">{item.observacao}</div>
+                              )}
+                            </div>
+                          )}
                         </td>
-                        <td className="px-4 py-2">{item.categoria}</td>
-                        <td className="px-4 py-2">{item.quantidade}</td>
-                        <td className="px-4 py-2">R$ {item.preco.toFixed(2)}</td>
-                        <td className="px-4 py-2">R$ {(item.quantidade * item.preco).toFixed(2)}</td>
                         <td className="px-4 py-2">
-                          <button
-                            onClick={() => removerItem(item.id)}
-                            className="text-red-600 hover:text-red-800"
-                            title="Remover"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                          {editandoItem?.id === item.id ? (
+                            <select
+                              value={editandoValores.categoria}
+                              onChange={(e) => setEditandoValores(prev => ({ ...prev, categoria: e.target.value }))}
+                              className="w-full px-2 py-1 border border-gray-300 rounded-md"
+                            >
+                              {categorias.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.nome}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            item.categoria
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          {editandoItem?.id === item.id ? (
+                            <input
+                              type="number"
+                              value={editandoValores.quantidade}
+                              onChange={(e) => setEditandoValores(prev => ({ ...prev, quantidade: Number(e.target.value) }))}
+                              min="1"
+                              className="w-20 px-2 py-1 border border-gray-300 rounded-md"
+                            />
+                          ) : (
+                            item.quantidade
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          {editandoItem?.id === item.id ? (
+                            <input
+                              type="number"
+                              value={editandoValores.preco}
+                              onChange={(e) => setEditandoValores(prev => ({ ...prev, preco: Number(e.target.value) }))}
+                              step="0.01"
+                              min="0"
+                              className="w-24 px-2 py-1 border border-gray-300 rounded-md"
+                            />
+                          ) : (
+                            `R$ ${item.preco.toFixed(2)}`
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          R$ {(item.quantidade * item.preco).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2">
+                          {editandoItem?.id === item.id ? (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => salvarEdicaoInline(item.id)}
+                                className="text-green-600 hover:text-green-800"
+                                title="Salvar"
+                              >
+                                <CheckCircle size={18} />
+                              </button>
+                              <button
+                                onClick={cancelarEdicaoInline}
+                                className="text-gray-600 hover:text-gray-800"
+                                title="Cancelar"
+                              >
+                                <X size={18} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => iniciarEdicao(item)}
+                                className="text-blue-600 hover:text-blue-800"
+                                title="Editar"
+                              >
+                                <Pencil size={18} />
+                              </button>
+                              <button
+                                onClick={() => removerItem(item.id)}
+                                className="text-red-600 hover:text-red-800"
+                                title="Remover"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -751,7 +1045,7 @@ const ListaComprasPage: React.FC = () => {
                       }`}
                     >
                       <BarChart size={14} />
-                      <span className="hidden sm:inline">Qtd. de</span>
+                      <span className="hidden sm:inline">Quantidade de</span>
                       <span>Itens</span>
                     </button>
                     <button
