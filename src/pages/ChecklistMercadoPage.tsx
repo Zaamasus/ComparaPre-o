@@ -207,7 +207,7 @@ const ChecklistMercadoPage: React.FC = () => {
             </div>
           </div>
         </section>
-        <div className="container mx-auto px-4 max-w-2xl flex justify-start mb-2 mt-9">
+        <div className="container mx-auto px-4 max-w-2xl flex justify-start  mt-4">
                 <a
                   href="/ComparaPre-o/lista-compras"
                   className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-200 transition-colors"
@@ -215,7 +215,7 @@ const ChecklistMercadoPage: React.FC = () => {
                   <CheckCircle size={18} /> Ir para Lista de Compras
                 </a>
               </div>
-        <section className="py-8 md:py-16">
+        <section className="py-4 ">
           <div className="container mx-auto px-4 max-w-2xl">
             {/* Card de Minhas listas */}
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
